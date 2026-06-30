@@ -238,26 +238,23 @@ app.post("/api/analyze-resume", async (req, res) => {
 
     if (fileData && mimeType) {
       // Base64 file input (PDF or Image)
-      contents = {
-        role: "user",
-        parts: [
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: fileData,
-            },
+      contents = [
+        {
+          inlineData: {
+            mimeType: mimeType,
+            data: fileData,
           },
-          { text: prompt },
-        ],
-      };
+        },
+        prompt
+      ];
     } else {
       // Plain text resume input
       contents = `${prompt}\n\nResume Text:\n${textData}`;
     }
 
-    // Call the model (we use gemini-3.5-flash as the default reliable model)
+    // Call the model (we use gemini-2.5-flash as the default reliable model)
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: contents,
       config: {
         responseMimeType: "application/json",

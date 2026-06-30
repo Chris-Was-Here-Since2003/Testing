@@ -115,7 +115,7 @@ export default function App() {
 
           <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
             <span className="hidden sm:inline bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full border border-indigo-100">
-              Powered by Gemini 3.5 Flash
+              Powered by Gemini 2.5 Flash
             </span>
           </div>
         </div>
