@@ -105,7 +105,7 @@ export default function App() {
             </div>
             <div>
               <span className="font-sans font-extrabold text-lg tracking-tight text-slate-950 block">
-                CareerHorizon
+                SkillSense
               </span>
               <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block">
                 AI Resume Futurist
@@ -193,7 +193,7 @@ export default function App() {
       {/* Footer explaining methodology */}
       <footer className="bg-white border-t border-gray-200 py-6 px-6 shrink-0 text-center">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <p>© 2026 CareerHorizon. Built with Google AI Studio and Gemini 3.5 Flash.</p>
+          <p>© 2026 SkillSense. Built with Google AI Studio and Gemini 3.5 Flash.</p>
           <div className="flex items-center gap-4 flex-wrap justify-center">
             <span className="flex items-center gap-1">
               <Info className="w-3.5 h-3.5 text-indigo-500" />
