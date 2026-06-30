@@ -221,6 +221,7 @@ app.post("/api/analyze-resume", async (req, res) => {
     let prompt = `
       You are an expert technical recruiter, executive career coach, and labor market economist.
       Analyze the provided resume and perform a deep evaluation. You must output a JSON object following the specified schema.
+      If there is no meaningful data to be extracted for a field, return an empty array or null as appropriate. Ensure all fields are populated accurately based on the resume content.
 
       Make sure to:
       1. Parse all standard fields: work experience, education, skills, certifications, projects, and achievements. Ensure values are accurate to the input.
