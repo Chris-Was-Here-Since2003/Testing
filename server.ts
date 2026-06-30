@@ -234,20 +234,25 @@ app.post("/api/analyze-resume", async (req, res) => {
       5. Perform a Skill Gap Analysis identifying missing/emerging skills with highly customized, practical recommendations.
     `;
 
-    let contents: any[] = [];
+    let contents: any;
 
     if (fileData && mimeType) {
       // Base64 file input (PDF or Image)
-      contents.push({
-        inlineData: {
-          mimeType: mimeType,
-          data: fileData,
-        },
-      });
-      contents.push({ text: prompt });
+      contents = {
+        role: "user",
+        parts: [
+          {
+            inlineData: {
+              mimeType: mimeType,
+              data: fileData,
+            },
+          },
+          { text: prompt },
+        ],
+      };
     } else {
       // Plain text resume input
-      contents.push({ text: `${prompt}\n\nResume Text:\n${textData}` });
+      contents = `${prompt}\n\nResume Text:\n${textData}`;
     }
 
     // Call the model (we use gemini-3.5-flash as the default reliable model)
