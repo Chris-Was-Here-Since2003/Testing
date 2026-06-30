@@ -10,6 +10,7 @@ export default function App() {
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<ResumeAnalysisResult | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
   const loadingPhrases = [
     "Parsing resume document structures...",
@@ -89,6 +90,7 @@ export default function App() {
   const handleReset = () => {
     setAnalysisResult(null);
     setError(null);
+    setResetKey((prev) => prev + 1);
   };
 
   return (
@@ -184,7 +186,7 @@ export default function App() {
           <AnalysisDashboard data={analysisResult} onReset={handleReset} />
         ) : (
           /* Upload View */
-          <ResumeUpload onAnalyze={handleAnalyze} isLoading={isLoading} />
+          <ResumeUpload key={resetKey} onAnalyze={handleAnalyze} isLoading={isLoading} />
         )}
       </main>
 

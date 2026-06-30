@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Upload, FileText, Sparkles, Clipboard, AlertCircle } from "lucide-react";
 import { sampleResumes } from "../sampleData";
 
@@ -13,6 +13,17 @@ export default function ResumeUpload({ onAnalyze, isLoading }: ResumeUploadProps
   const [pastedText, setPastedText] = useState("");
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Explicitly reset all local states and file input elements on component mount
+    setIsDragOver(false);
+    setPasteMode(false);
+    setPastedText("");
+    setFileError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
