@@ -56,37 +56,69 @@ export default function AnalysisDashboard({ data, onReset }: AnalysisDashboardPr
 
   const getDifficultyColor = (diff: string) => {
     switch (diff.toLowerCase()) {
-      case "low": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "medium": return "bg-amber-50 text-amber-700 border-amber-200";
-      case "high": return "bg-rose-50 text-rose-700 border-rose-200";
-      default: return "bg-gray-50 text-gray-700 border-gray-200";
+      case "low": {
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      }
+      case "medium": {
+        return "bg-amber-50 text-amber-700 border-amber-200";
+      }
+      case "high": {
+        return "bg-rose-50 text-rose-700 border-rose-200";
+      }
+      default: {
+        return "bg-gray-50 text-gray-700 border-gray-200";
+      }
     }
   };
 
   const getDemandColor = (demand: string) => {
     switch (demand.toLowerCase()) {
-      case "high": return "bg-indigo-50 text-indigo-700 border-indigo-200";
-      case "moderate": return "bg-sky-50 text-sky-700 border-sky-200";
-      case "low": return "bg-slate-50 text-slate-700 border-slate-200";
-      default: return "bg-gray-50 text-gray-700 border-gray-200";
+      case "high": {
+        return "bg-indigo-50 text-indigo-700 border-indigo-200";
+      }
+      case "moderate": {
+        return "bg-sky-50 text-sky-700 border-sky-200";
+      }
+      case "low": {
+        return "bg-slate-50 text-slate-700 border-slate-200";
+      }
+      default: {
+        return "bg-gray-50 text-gray-700 border-gray-200";
+      }
     }
   };
 
   const getGapPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
-      case "high": return "bg-red-50 text-red-700 border-red-200";
-      case "medium": return "bg-amber-50 text-amber-700 border-amber-200";
-      case "low": return "bg-blue-50 text-blue-700 border-blue-200";
-      default: return "bg-gray-50 text-gray-700 border-gray-200";
+      case "high": {
+        return "bg-red-50 text-red-700 border-red-200";
+      }
+      case "medium": {
+        return "bg-amber-50 text-amber-700 border-amber-200";
+      }
+      case "low": {
+        return "bg-blue-50 text-blue-700 border-blue-200";
+      }
+      default: {
+        return "bg-gray-50 text-gray-700 border-gray-200";
+      }
     }
   };
 
   const getGapTypeBadge = (type: string) => {
     switch (type.toLowerCase()) {
-      case "critical": return "bg-rose-100 text-rose-900 font-bold border-rose-300";
-      case "missing": return "bg-amber-100 text-amber-900 font-medium border-amber-200";
-      case "emerging": return "bg-purple-100 text-purple-900 font-medium border-purple-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+      case "critical": {
+        return "bg-rose-100 text-rose-900 font-bold border-rose-300";
+      }
+      case "missing": {
+        return "bg-amber-100 text-amber-900 font-medium border-amber-200";
+      }
+      case "emerging": {
+        return "bg-purple-100 text-purple-900 font-medium border-purple-200";
+      }
+      default: {
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      }
     }
   };
 
