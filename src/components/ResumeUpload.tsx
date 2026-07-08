@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Upload, FileText, Sparkles, Clipboard, AlertCircle } from "lucide-react";
-import { sampleResumes } from "../sampleData";
+import { SAMPLE_RESUMES } from "../sampleData";
 
 interface ResumeUploadProps {
   onAnalyze: (payload: { textData?: string; fileData?: string; mimeType?: string; isSample?: boolean; sampleName?: string }) => void;
@@ -99,7 +99,9 @@ export default function ResumeUpload({ onAnalyze, isLoading }: ResumeUploadProps
 
   const handlePasteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pastedText.trim()) return;
+    if (!pastedText.trim()) {
+      return;
+    }
     onAnalyze({ textData: pastedText });
   };
 
@@ -234,7 +236,7 @@ export default function ResumeUpload({ onAnalyze, isLoading }: ResumeUploadProps
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
-          {Object.entries(sampleResumes).map(([key, value]) => (
+          {Object.entries(SAMPLE_RESUMES).map(([key, value]) => (
             <button
               key={key}
               onClick={() => onAnalyze({ isSample: true, sampleName: key })}

@@ -37,7 +37,7 @@ function getGenAI(): GoogleGenAI {
 }
 
 // Structured schema for detailed resume analysis and career prediction
-const resumeAnalysisSchema = {
+const RESUME_ANALYSIS_SCHEMA = {
   type: Type.OBJECT,
   properties: {
     personalInfo: {
@@ -272,7 +272,7 @@ app.post("/api/analyze-resume", async (req, res) => {
       contents: contents,
       config: {
         responseMimeType: "application/json",
-        responseSchema: resumeAnalysisSchema,
+        responseSchema: RESUME_ANALYSIS_SCHEMA,
         temperature: 0.2, // Low temperature for higher accuracy in parsing
       },
     });

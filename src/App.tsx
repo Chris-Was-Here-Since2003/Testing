@@ -3,7 +3,7 @@ import { Sparkles, Brain, Compass, HelpCircle, RefreshCw, AlertCircle, TrendingU
 import ResumeUpload from "./components/ResumeUpload";
 import AnalysisDashboard from "./components/AnalysisDashboard";
 import { ResumeAnalysisResult } from "./types";
-import { sampleResumes } from "./sampleData";
+import { SAMPLE_RESUMES } from "./sampleData";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +50,7 @@ export default function App() {
     // Short-circuit if it is a sample
     if (payload.isSample && payload.sampleName) {
       setTimeout(() => {
-        const sample = sampleResumes[payload.sampleName!];
+        const sample = SAMPLE_RESUMES[payload.sampleName!];
         if (sample) {
           setAnalysisResult(sample.data);
         } else {

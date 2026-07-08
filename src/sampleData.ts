@@ -1,6 +1,6 @@
 import { ResumeAnalysisResult } from "./types";
 
-export const sampleResumes: Record<string, { label: string; description: string; data: ResumeAnalysisResult }> = {
+export const SAMPLE_RESUMES: Record<string, { label: string; description: string; data: ResumeAnalysisResult }> = {
   softwareEngineer: {
     label: "Software Engineer → AI & Architecture",
     description: "Full-Stack developer with 4 years of React and Node.js experience looking to scale into AI and Systems Architecture.",
