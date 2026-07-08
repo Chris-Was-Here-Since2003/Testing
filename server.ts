@@ -126,23 +126,36 @@ const resumeAnalysisSchema = {
       properties: {
         currentCareerStage: { type: Type.STRING, description: "e.g., Entry, Mid-Level, Senior, Lead, Executive" },
         outlookSummary: { type: Type.STRING, description: "A detailed narrative of future career growth outlook" },
-        predictedRoles: {
+        pathways: {
           type: Type.ARRAY,
+          description: "An array of 2 to 5 distinct, highly customized alternative career pathways suited for this candidate (e.g. Expert Specialist, Tech Leadership, Product Management, Entrepreneur/Consultant)",
           items: {
             type: Type.OBJECT,
             properties: {
-              roleTitle: { type: Type.STRING },
-              timeframe: { type: Type.STRING, description: "e.g., 1-2 years, 3-4 years, 5+ years" },
-              transitionDifficulty: { type: Type.STRING, description: "Low, Medium, or High" },
-              marketDemand: { type: Type.STRING, description: "Low, Moderate, or High" },
-              requiredSkillsToAcquire: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific skills the candidate must develop to reach this role" },
-              description: { type: Type.STRING, description: "Brief description of the role, why it fits their trajectory, and how they get there" }
+              pathwayName: { type: Type.STRING, description: "The specific title of this career pathway option" },
+              description: { type: Type.STRING, description: "A summary explaining the focus, core strengths, and rationale behind this pathway" },
+              predictedRoles: {
+                type: Type.ARRAY,
+                description: "3 sequential future roles representing growth: 1-2 years (short term), 3-4 years (mid term), and 5+ years (long term)",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    roleTitle: { type: Type.STRING },
+                    timeframe: { type: Type.STRING, description: "e.g., 1-2 years, 3-4 years, 5+ years" },
+                    transitionDifficulty: { type: Type.STRING, description: "Low, Medium, or High" },
+                    marketDemand: { type: Type.STRING, description: "Low, Moderate, or High" },
+                    requiredSkillsToAcquire: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific skills the candidate must develop to reach this role" },
+                    description: { type: Type.STRING, description: "Brief description of the role, why it fits their trajectory, and how they get there" }
+                  },
+                  required: ["roleTitle", "timeframe", "transitionDifficulty", "marketDemand", "requiredSkillsToAcquire", "description"]
+                }
+              }
             },
-            required: ["roleTitle", "timeframe", "transitionDifficulty", "marketDemand", "requiredSkillsToAcquire", "description"]
+            required: ["pathwayName", "description", "predictedRoles"]
           }
         }
       },
-      required: ["currentCareerStage", "outlookSummary", "predictedRoles"]
+      required: ["currentCareerStage", "outlookSummary", "pathways"]
     },
     competitivenessScores: {
       type: Type.OBJECT,
@@ -225,7 +238,7 @@ app.post("/api/analyze-resume", async (req, res) => {
       An example of garbleddata would be like : jabfjshjsfsjhvdhfjsjkh
       Make sure to:
       1. Parse all standard fields: work experience, education, skills, certifications, projects, and achievements. Ensure values are accurate to the input.
-      2. Predict a logical career path progression with 3 future roles over 1-2 years, 3-4 years, and 5+ years. Describe each role, difficulty, and skills to acquire.
+      2. Predict multiple alternative career pathways (minimum of 2, maximum of 5, e.g. Technical Specialist track, Management/Leadership track, Product/Strategy hybrid track, and Entrepreneurship/Consulting track). Each pathway must have a clear title, description of its focus, and exactly 3 sequential future roles over 1-2 years (short term), 3-4 years (mid term), and 5+ years (long term). Describe each role, transition difficulty, market demand, and skills to acquire.
       3. Categorize key technical and soft skills into a skills heat map with explicit proficiency ratings (1 to 100) and descriptions of strength.
       4. Compute a competitiveness score (0 to 100) for three specific epochs:
          - 5 years ago

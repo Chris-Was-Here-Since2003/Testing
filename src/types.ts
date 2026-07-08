@@ -51,10 +51,16 @@ export interface PredictedRole {
   description: string;
 }
 
+export interface CareerPathway {
+  pathwayName: string;
+  description: string;
+  predictedRoles: PredictedRole[];
+}
+
 export interface CareerProgression {
   currentCareerStage: string;
   outlookSummary: string;
-  predictedRoles: PredictedRole[];
+  pathways: CareerPathway[];
 }
 
 export interface EpochScore {
