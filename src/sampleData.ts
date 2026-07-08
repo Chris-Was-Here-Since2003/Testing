@@ -74,30 +74,66 @@ export const sampleResumes: Record<string, { label: string; description: string;
       careerProgression: {
         currentCareerStage: "Senior (Mid-Senior Level)",
         outlookSummary: "Alex is in an excellent position to scale. His high competence in core full-stack Engineering provides a stable foundation. However, to transition into AI and Systems Architecture, he must acquire structured experience in distributed streaming and deep learning frameworks, pivoting from pure feature development to system modeling.",
-        predictedRoles: [
+        pathways: [
           {
-            roleTitle: "Staff Systems Engineer",
-            timeframe: "1-2 years",
-            transitionDifficulty: "Low",
-            marketDemand: "High",
-            requiredSkillsToAcquire: ["Docker & Kubernetes", "gRPC", "Distributed Caching"],
-            description: "Step into higher systems oversight. Focus on infrastructure-as-code, orchestration, API latency optimizations, and high-availability database replication layers."
+            pathwayName: "AI & ML Systems Route",
+            description: "Pivot towards machine learning operations, neural network integrations, and building intelligent autonomous agents.",
+            predictedRoles: [
+              {
+                roleTitle: "Senior AI Integration Developer",
+                timeframe: "1-2 years",
+                transitionDifficulty: "Low",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["LangChain / LlamaIndex", "Vector Databases (Pinecone, Chroma)", "Prompt Engineering"],
+                description: "Integrate LLMs and deep learning models into SaaS products. Focus on semantic search pipelines, caching, and building conversational agents."
+              },
+              {
+                roleTitle: "AI Systems Architect",
+                timeframe: "3-4 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Python (PyTorch/numpy)", "Model Quantization & Distillation", "CUDA Basics"],
+                description: "Bridge system design with AI capabilities. Focus on building performant server-side AI architectures, optimizing GPU/inference costs, and custom embeddings."
+              },
+              {
+                roleTitle: "Director of AI Engineering",
+                timeframe: "5+ years",
+                transitionDifficulty: "High",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Technical Leadership", "AI Safety & Ethics", "AI Budgeting & GPU Economics"],
+                description: "Steer corporate technological direction. Lead engineering groups developing bespoke AI micro-services, oversee high-budget cloud resources, and align enterprise goals with AI feasibility."
+              }
+            ]
           },
           {
-            roleTitle: "AI Integration Architect",
-            timeframe: "3-4 years",
-            transitionDifficulty: "Medium",
-            marketDemand: "High",
-            requiredSkillsToAcquire: ["Python (PyTorch/numpy)", "Vector Databases (Pinecone/Milvus)", "LLM Fine-tuning", "RAG Pipeline Engineering"],
-            description: "Bridge system design with AI capabilities. Focus on building performant server-side AI agents, optimizing context windows, structuring vector-based retrieval pipelines (RAG), and cost-effectively deploying open-source models."
-          },
-          {
-            roleTitle: "Director of AI Systems",
-            timeframe: "5+ years",
-            transitionDifficulty: "High",
-            marketDemand: "High",
-            requiredSkillsToAcquire: ["Technical Leadership", "AI Safety & Ethics", "AI Budgeting & GPU Economics"],
-            description: "Steer corporate technological direction. Lead engineering groups developing bespoke AI micro-services, oversee high-budget cloud resources, and align enterprise goals with AI feasibility."
+            pathwayName: "Enterprise Cloud Architecture Route",
+            description: "Scale into high-availability distributed systems, container orchestration, and multi-tenant enterprise architectures.",
+            predictedRoles: [
+              {
+                roleTitle: "Staff Systems Engineer",
+                timeframe: "1-2 years",
+                transitionDifficulty: "Low",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Docker & Kubernetes", "gRPC", "Distributed Caching"],
+                description: "Step into higher systems oversight. Focus on infrastructure-as-code, orchestration, API latency optimizations, and high-availability database replication layers."
+              },
+              {
+                roleTitle: "Principal Cloud Architect",
+                timeframe: "3-4 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Terraform", "Multi-region Failover Strategies", "Cloud Security (AWS/GCP)"],
+                description: "Architect secure, multi-tenant global infrastructures. Design systems capable of zero-downtime upgrades, global horizontal scaling, and modern edge-networking."
+              },
+              {
+                roleTitle: "VP of Infrastructure & Platform",
+                timeframe: "5+ years",
+                transitionDifficulty: "High",
+                marketDemand: "Moderate",
+                requiredSkillsToAcquire: ["Enterprise Security Compliance", "Cost Optimization at Scale", "Strategic Vendor Management"],
+                description: "Manage the entire platform division, driving SLA compliance, cloud vendor negotiations, and technical roadmaps for dev-experience and reliability."
+              }
+            ]
           }
         ]
       },
@@ -214,30 +250,66 @@ export const sampleResumes: Record<string, { label: string; description: string;
       careerProgression: {
         currentCareerStage: "Mid-Level Specialist",
         outlookSummary: "Sarah is leveraging a powerful hybrid advantage: she has domain expertise in marketing/sales AND growing analytical skills. This makes her infinitely more useful as a Business Intelligence or Growth Analyst than a pure math grad who has never run a campaign, because she knows exactly what the business metrics mean.",
-        predictedRoles: [
+        pathways: [
           {
-            roleTitle: "Growth Data Analyst",
-            timeframe: "1-2 years",
-            transitionDifficulty: "Low",
-            marketDemand: "High",
-            requiredSkillsToAcquire: ["Advanced SQL (Window functions)", "Basic Python (Pandas/Seaborn)", "A/B Testing Statistics"],
-            description: "Step into a dedicated analytics seat. Manage user cohort analysis, design and evaluate rigorous growth A/B experiments, and report conversion statistics directly to the VP of Growth."
+            pathwayName: "Growth Analytics Track",
+            description: "Deep dive into statistical testing, data warehousing, BI tools, and data modeling to drive corporate growth.",
+            predictedRoles: [
+              {
+                roleTitle: "Growth Data Analyst",
+                timeframe: "1-2 years",
+                transitionDifficulty: "Low",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Advanced SQL (Window functions)", "Basic Python (Pandas/Seaborn)", "A/B Testing Statistics"],
+                description: "Step into a dedicated analytics seat. Manage user cohort analysis, design and evaluate rigorous growth A/B experiments, and report conversion statistics directly to the VP of Growth."
+              },
+              {
+                roleTitle: "Analytics Engineering Lead",
+                timeframe: "3-4 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["dbt (Data Build Tool)", "Data Warehousing (Snowflake/BigQuery)", "Git & Version Control"],
+                description: "Own the data transformation layer. Transition from querying raw databases to modeling robust, clean data structures, building dbt models, and setting up reliable data pipelines."
+              },
+              {
+                roleTitle: "Director of Business Intelligence",
+                timeframe: "5+ years",
+                transitionDifficulty: "High",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Data Governance", "Executive Strategy", "Team Leadership", "Predictive Analytics"],
+                description: "Lead the corporate business intelligence division. Align company KPIs with automated data pipelines, manage teams of analysts and engineers, and collaborate directly with C-suite on data-backed strategies."
+              }
+            ]
           },
           {
-            roleTitle: "Analytics Engineering Lead",
-            timeframe: "3-4 years",
-            transitionDifficulty: "Medium",
-            marketDemand: "High",
-            requiredSkillsToAcquire: ["dbt (Data Build Tool)", "Data Warehousing (Snowflake/BigQuery)", "Git & Version Control"],
-            description: "Own the data transformation layer. Transition from querying raw databases to modeling robust, clean data structures, building dbt models, and setting up reliable data pipelines."
-          },
-          {
-            roleTitle: "Director of Business Intelligence",
-            timeframe: "5+ years",
-            transitionDifficulty: "High",
-            marketDemand: "High",
-            requiredSkillsToAcquire: ["Data Governance", "Executive Strategy", "Team Leadership", "Predictive Analytics"],
-            description: "Lead the corporate business intelligence division. Align company KPIs with automated data pipelines, manage teams of analysts and engineers, and collaborate directly with C-suite on data-backed strategies."
+            pathwayName: "Product Management Track",
+            description: "Leverage customer insights, marketing metrics, and growing analytical skills to define product strategy, roadmap, and core features.",
+            predictedRoles: [
+              {
+                roleTitle: "Associate Product Manager (Growth)",
+                timeframe: "1-2 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Agile/Scrum", "Product Analytics (Amplitude/Mixpanel)", "UX/UI Design Fundamentals"],
+                description: "Own growth features and onboarding funnels. Align acquisition marketing metrics with core in-app user retention programs."
+              },
+              {
+                roleTitle: "Product Manager (Core Platform)",
+                timeframe: "3-4 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["System Architecture Basics", "API Integrations", "Roadmapping & Stakeholder Management"],
+                description: "Manage end-to-end product lifecycles. Collaborate with engineering, marketing, and sales to launch customer-centric SaaS integrations."
+              },
+              {
+                roleTitle: "VP of Product",
+                timeframe: "5+ years",
+                transitionDifficulty: "High",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Corporate Finance", "Portfolio Management", "Strategic Vision & Public Speaking"],
+                description: "Own the entire corporate product portfolio. Define the 5-year product strategy, build high-performing PM teams, and report on business value directly to the C-suite."
+              }
+            ]
           }
         ]
       },
