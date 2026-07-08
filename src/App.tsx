@@ -22,13 +22,15 @@ export default function App() {
     "Assembling strategic gap analysis and professional coach recommendations...",
     "Wrapping visual dashboard parameters..."
   ];
-
+  useEffect(() => {
+    handleReset(); // Reset state on initial load/reload
+  }, []);
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isLoading) {
       interval = setInterval(() => {
         setLoadingPhraseIndex((prev) => (prev + 1) % loadingPhrases.length);
-      }, 3000);
+      }, 3000);//change the phrase every 3 seconds
     } else {
       setLoadingPhraseIndex(0);
     }

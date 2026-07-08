@@ -221,16 +221,16 @@ app.post("/api/analyze-resume", async (req, res) => {
     let prompt = `
       You are an expert technical recruiter, executive career coach, and labor market economist.
       Analyze the provided resume and perform a deep evaluation. You must output a JSON object following the specified schema.
-      If there is no meaningful data to be extracted for a field, return an empty array or null as appropriate. Ensure all fields are populated accurately based on the resume content.
-
+      If there is no data to be extracted for a field, return an empty array or null as appropriate. Ensure all fields are populated accurately based on the resume content.
+      An example of garbleddata would be like : jabfjshjsfsjhvdhfjsjkh
       Make sure to:
       1. Parse all standard fields: work experience, education, skills, certifications, projects, and achievements. Ensure values are accurate to the input.
       2. Predict a logical career path progression with 3 future roles over 1-2 years, 3-4 years, and 5+ years. Describe each role, difficulty, and skills to acquire.
       3. Categorize key technical and soft skills into a skills heat map with explicit proficiency ratings (1 to 100) and descriptions of strength.
       4. Compute a competitiveness score (0 to 100) for three specific epochs:
-         - 5 Years Ago (circa 2021)
-         - Today (2026)
-         - 5 Years in the Future (circa 2031)
+         - 5 years ago
+         - Today (This year)
+         - 5 Years in the Future
          In corporate labor economics context, analyze technological disruption, AI growth, automation risk, and stack shifts for each epoch and provide context.
       5. Perform a Skill Gap Analysis identifying missing/emerging skills with highly customized, practical recommendations.
     `;
