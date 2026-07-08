@@ -4,6 +4,7 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import { sqlGet, sqlAll, sqlRun } from "./serverDb";
 
 dotenv.config();
 
@@ -13,6 +14,162 @@ const PORT = 3000;
 // Increase request size limit for handling base64 PDFs and images
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true, limit: "15mb" }));
+
+// --- SQL Account & Firebase-styled Authentication APIs ---
+
+// 1. User Registration Route
+app.post("/api/auth/register", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+
+  try {
+    // Check if user already exists
+    const existingUser = await sqlGet<{ id: string }>(
+      "SELECT id FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (existingUser) {
+      return res.status(400).json({ error: "An account with this email already exists." });
+    }
+
+    // Generate a secure unique user ID (e.g., firebase-styled unique ID)
+    const userId = "user_" + Math.random().toString(36).substr(2, 9);
+
+    // Save to relational SQL table
+    await sqlRun(
+      "INSERT INTO users (id, email, password) VALUES (?, ?, ?)",
+      [userId, email, password]
+    );
+
+    res.status(201).json({
+      message: "Account registered successfully in SQL database.",
+      user: { id: userId, email }
+    });
+  } catch (err: any) {
+    console.error("Registration error:", err);
+    res.status(500).json({ error: "Failed to register account in SQL database." });
+  }
+});
+
+// 2. User Login Route
+app.post("/api/auth/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+
+  try {
+    // Select user from SQL table
+    const user = await sqlGet<{ id: string; email: string; password?: string }>(
+      "SELECT id, email, password FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: "Invalid email or password." });
+    }
+
+    res.json({
+      message: "Logged in successfully.",
+      user: { id: user.id, email: user.email }
+    });
+  } catch (err: any) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "An error occurred during authentication." });
+  }
+});
+
+// 3. Save Resume to Relational SQL Table
+app.post("/api/resumes", async (req, res) => {
+  const userId = req.headers["x-user-id"] as string;
+  const { name, parsedData } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized. Please register/login first." });
+  }
+  if (!name || !parsedData) {
+    return res.status(400).json({ error: "Resume name and parsed data are required." });
+  }
+
+  try {
+    // Generate an ID for the resume record
+    const resumeId = "resume_" + Math.random().toString(36).substr(2, 9);
+    const parsedDataString = JSON.stringify(parsedData);
+
+    // Insert into 'analyses' relational table linking to user_id
+    await sqlRun(
+      "INSERT INTO analyses (id, user_id, name, parsed_data) VALUES (?, ?, ?, ?)",
+      [resumeId, userId, name, parsedDataString]
+    );
+
+    res.status(201).json({
+      message: "Resume saved to your account successfully.",
+      resumeId
+    });
+  } catch (err: any) {
+    console.error("Error saving resume to SQL database:", err);
+    res.status(500).json({ error: "Failed to save resume." });
+  }
+});
+
+// 4. List Resumes Saved under the Relational Account
+app.get("/api/resumes", async (req, res) => {
+  const userId = req.headers["x-user-id"] as string;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized. Please register/login first." });
+  }
+
+  try {
+    // Retrieve rows for this user
+    const rows = await sqlAll<{ id: string; name: string; parsed_data: string; created_at: string }>(
+      "SELECT id, name, parsed_data, created_at FROM analyses WHERE user_id = ? ORDER BY created_at DESC",
+      [userId]
+    );
+
+    const resumes = rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      createdAt: row.created_at,
+      parsedData: JSON.parse(row.parsed_data)
+    }));
+
+    res.json(resumes);
+  } catch (err: any) {
+    console.error("Error fetching resumes from SQL database:", err);
+    res.status(500).json({ error: "Failed to fetch resumes." });
+  }
+});
+
+// 5. Delete Resume Saved under the Relational Account
+app.delete("/api/resumes/:id", async (req, res) => {
+  const userId = req.headers["x-user-id"] as string;
+  const { id } = req.params;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized. Please register/login first." });
+  }
+
+  try {
+    const result = await sqlRun(
+      "DELETE FROM analyses WHERE id = ? AND user_id = ?",
+      [id, userId]
+    );
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: "Resume not found or not owned by you." });
+    }
+
+    res.json({ message: "Resume deleted successfully." });
+  } catch (err: any) {
+    console.error("Error deleting resume from SQL database:", err);
+    res.status(500).json({ error: "Failed to delete resume." });
+  }
+});
+
 
 // Lazy initializer for Google GenAI client
 let aiClient: GoogleGenAI | null = null;

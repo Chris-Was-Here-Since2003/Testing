@@ -1,8 +1,26 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Brain, Compass, HelpCircle, RefreshCw, AlertCircle, TrendingUp, Info } from "lucide-react";
+import { 
+  Sparkles, 
+  Brain, 
+  Compass, 
+  HelpCircle, 
+  RefreshCw, 
+  AlertCircle, 
+  TrendingUp, 
+  Info,
+  LogOut,
+  User as UserIcon,
+  History,
+  Trash2,
+  Clock,
+  Database,
+  Lock,
+  ChevronDown
+} from "lucide-react";
 import ResumeUpload from "./components/ResumeUpload";
 import AnalysisDashboard from "./components/AnalysisDashboard";
-import { ResumeAnalysisResult } from "./types";
+import AccountModal from "./components/AccountModal";
+import { ResumeAnalysisResult, User, SavedResume } from "./types";
 import { SAMPLE_RESUMES } from "./sampleData";
 
 export default function App() {
@@ -11,6 +29,14 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<ResumeAnalysisResult | null>(null);
   const [resetKey, setResetKey] = useState(0);
+
+  // Authentication & SQL Relational Database States
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [savedResumes, setSavedResumes] = useState<SavedResume[]>([]);
+  const [isSavingResume, setIsSavingResume] = useState(false);
+  const [isCurrentResumeSaved, setIsCurrentResumeSaved] = useState(false);
+  const [showHistoryDropdown, setShowHistoryDropdown] = useState(false);
 
   const loadingPhrases = [
     "Parsing resume document structures...",
@@ -22,6 +48,121 @@ export default function App() {
     "Assembling strategic gap analysis and professional coach recommendations...",
     "Wrapping visual dashboard parameters..."
   ];
+
+  // Read current user session on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("skillsense_user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setCurrentUser(parsed);
+      } catch (e) {
+        console.error("Error reading stored user session:", e);
+      }
+    }
+  }, []);
+
+  // Fetch saved analyses when user logs in or switches
+  const fetchSavedResumes = async (userId: string) => {
+    try {
+      const response = await fetch("/api/resumes", {
+        headers: {
+          "x-user-id": userId
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSavedResumes(data);
+      }
+    } catch (err) {
+      console.error("Failed to load SQL database history:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchSavedResumes(currentUser.id);
+    } else {
+      setSavedResumes([]);
+    }
+    setIsCurrentResumeSaved(false);
+  }, [currentUser]);
+
+  // Auth Handlers
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    localStorage.setItem("skillsense_user", JSON.stringify(user));
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem("skillsense_user");
+    setShowHistoryDropdown(false);
+    setIsCurrentResumeSaved(false);
+  };
+
+  // SQL Persistence Handlers
+  const handleSaveCurrentAnalysis = async () => {
+    if (!currentUser || !analysisResult) return;
+    setIsSavingResume(true);
+    try {
+      const candidateName = analysisResult.personalInfo.fullName || "Resume Analysis";
+      const response = await fetch("/api/resumes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": currentUser.id
+        },
+        body: JSON.stringify({
+          name: candidateName,
+          parsedData: analysisResult
+        })
+      });
+
+      if (response.ok) {
+        setIsCurrentResumeSaved(true);
+        fetchSavedResumes(currentUser.id);
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to save analysis.");
+      }
+    } catch (err) {
+      console.error("SQL Save analysis failed:", err);
+    } finally {
+      setIsSavingResume(false);
+    }
+  };
+
+  const handleDeleteSavedResume = async (resumeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentUser) return;
+    if (!confirm("Are you sure you want to delete this saved analysis from your SQL database?")) return;
+
+    try {
+      const response = await fetch(`/api/resumes/${resumeId}`, {
+        method: "DELETE",
+        headers: {
+          "x-user-id": currentUser.id
+        }
+      });
+
+      if (response.ok) {
+        setSavedResumes((prev) => prev.filter((r) => r.id !== resumeId));
+        // Reset current analysis if it was deleted
+        setIsCurrentResumeSaved(false);
+      } else {
+        alert("Failed to delete analysis.");
+      }
+    } catch (err) {
+      console.error("Delete saved resume failed:", err);
+    }
+  };
+
+  const handleSelectSavedResume = (resume: SavedResume) => {
+    setAnalysisResult(resume.parsedData);
+    setIsCurrentResumeSaved(true);
+    setShowHistoryDropdown(false);
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -44,6 +185,7 @@ export default function App() {
   }) => {
     setIsLoading(true);
     setError(null);
+    setIsCurrentResumeSaved(false);
 
     // Short-circuit if it is a sample
     if (payload.isSample && payload.sampleName) {
@@ -90,6 +232,7 @@ export default function App() {
   const handleReset = () => {
     setAnalysisResult(null);
     setError(null);
+    setIsCurrentResumeSaved(false);
     setResetKey((prev) => prev + 1);
   };
 
@@ -113,10 +256,92 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
-            <span className="hidden sm:inline bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full border border-indigo-100">
+          <div className="flex items-center gap-4">
+            <span className="hidden lg:inline bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full border border-indigo-100 text-xs font-medium">
               Powered by Gemini 2.5 Flash
             </span>
+
+            {/* SQL Relational Accounts Widget */}
+            {currentUser ? (
+              <div className="flex items-center gap-3">
+                {/* History Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowHistoryDropdown(!showHistoryDropdown)}
+                    className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer border border-slate-200"
+                  >
+                    <History className="w-3.5 h-3.5 text-slate-500" />
+                    SQL History ({savedResumes.length})
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+
+                  {showHistoryDropdown && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+                      <div className="px-4 py-1.5 border-b border-slate-100 flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">SQL Table: Analyses</span>
+                        <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono">SQLite3</span>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto">
+                        {savedResumes.length === 0 ? (
+                          <div className="px-4 py-4 text-center text-xs text-gray-400 font-medium">
+                            No saved analyses yet.
+                          </div>
+                        ) : (
+                          savedResumes.map((resume) => (
+                            <div
+                              key={resume.id}
+                              onClick={() => handleSelectSavedResume(resume)}
+                              className="w-full text-left px-4 py-2.5 hover:bg-indigo-50/50 flex items-center justify-between gap-3 cursor-pointer transition-colors border-b border-slate-50 last:border-0"
+                            >
+                              <div className="min-w-0">
+                                <span className="block text-xs font-bold text-slate-800 truncate">
+                                  {resume.name}
+                                </span>
+                                <span className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5">
+                                  <Clock className="w-3 h-3 text-gray-300" />
+                                  {new Date(resume.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <button
+                                onClick={(e) => handleDeleteSavedResume(resume.id, e)}
+                                className="text-gray-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Account Details */}
+                <div className="flex items-center gap-2 border-l border-gray-200 pl-3">
+                  <div className="hidden md:flex flex-col items-end">
+                    <span className="text-xs font-bold text-slate-800">{currentUser.email}</span>
+                    <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-wider flex items-center gap-1">
+                      <Database className="w-2.5 h-2.5" /> SQL Storage
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 text-gray-500 hover:text-rose-600 rounded-xl hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all cursor-pointer"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all cursor-pointer"
+              >
+                <UserIcon className="w-3.5 h-3.5" />
+                My Account
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -183,7 +408,15 @@ export default function App() {
           </div>
         ) : analysisResult ? (
           /* The primary dashboard view */
-          <AnalysisDashboard data={analysisResult} onReset={handleReset} />
+          <AnalysisDashboard 
+            data={analysisResult} 
+            onReset={handleReset} 
+            currentUser={currentUser}
+            onSave={handleSaveCurrentAnalysis}
+            isSaving={isSavingResume}
+            isSaved={isCurrentResumeSaved}
+            onTriggerLogin={() => setShowAuthModal(true)}
+          />
         ) : (
           /* Upload View */
           <ResumeUpload key={resetKey} onAnalyze={handleAnalyze} isLoading={isLoading} />
@@ -202,6 +435,14 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Account Modal for SQLite Authentication */}
+      {showAuthModal && (
+        <AccountModal 
+          onClose={() => setShowAuthModal(false)}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      )}
     </div>
   );
 }

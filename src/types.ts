@@ -100,3 +100,16 @@ export interface ResumeAnalysisResult {
   competitivenessScores: CompetitivenessScores;
   skillGapAnalysis: SkillGapAnalysis;
 }
+
+export interface User {
+  id: string;
+  email: string;
+}
+
+export interface SavedResume {
+  id: string;
+  name: string;
+  createdAt: string;
+  parsedData: ResumeAnalysisResult;
+}
+
