@@ -88,9 +88,10 @@ const RESUME_ANALYSIS_SCHEMA = {
           name: { type: Type.STRING },
           category: { type: Type.STRING, description: "technical, soft, or domain" },
           proficiency: { type: Type.INTEGER, description: "Proficiency score from 1 to 100 based on experience depth" },
-          strengthDescription: { type: Type.STRING, description: "Brief explanation of how this skill manifests" }
+          strengthDescription: { type: Type.STRING, description: "Brief explanation of how this skill manifests" },
+          scoreJustification: { type: Type.STRING, description: "Detailed justification of why this specific score (1-100) was given, reference relevant resume facts" }
         },
-        required: ["name", "category", "proficiency"]
+        required: ["name", "category", "proficiency", "strengthDescription", "scoreJustification"]
       }
     },
     certifications: {
@@ -234,16 +235,15 @@ app.post("/api/analyze-resume", async (req, res) => {
     let prompt = `
       You are an expert technical recruiter, executive career coach, and labor market economist.
       Analyze the provided resume and perform a deep evaluation. You must output a JSON object following the specified schema.
-      If there is no data to be extracted for a field, return an empty array or null as appropriate. Ensure all fields are populated accurately based on the resume content.
-      An example of garbleddata would be like : jabfjshjsfsjhvdhfjsjkh
+
       Make sure to:
       1. Parse all standard fields: work experience, education, skills, certifications, projects, and achievements. Ensure values are accurate to the input.
       2. Predict multiple alternative career pathways (minimum of 2, maximum of 5, e.g. Technical Specialist track, Management/Leadership track, Product/Strategy hybrid track, and Entrepreneurship/Consulting track). Each pathway must have a clear title, description of its focus, and exactly 3 sequential future roles over 1-2 years (short term), 3-4 years (mid term), and 5+ years (long term). Describe each role, transition difficulty, market demand, and skills to acquire.
-      3. Categorize key technical and soft skills into a skills heat map with explicit proficiency ratings (1 to 100) and descriptions of strength.
+      3. Categorize key technical and soft skills into a skills heat map with explicit proficiency ratings (1 to 100), descriptions of strength, and a detailed justification of why that specific score (1 to 100) was given based on their years of experience, projects, or level of responsibility shown in the resume.
       4. Compute a competitiveness score (0 to 100) for three specific epochs:
-         - 5 years ago
-         - Today (This year)
-         - 5 Years in the Future
+         - 5 Years Ago (circa 2021)
+         - Today (2026)
+         - 5 Years in the Future (circa 2031)
          In corporate labor economics context, analyze technological disruption, AI growth, automation risk, and stack shifts for each epoch and provide context.
       5. Perform a Skill Gap Analysis identifying missing/emerging skills with highly customized, practical recommendations.
     `;

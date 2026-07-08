@@ -47,15 +47,15 @@ export const SAMPLE_RESUMES: Record<string, { label: string; description: string
         }
       ],
       skills: [
-        { name: "TypeScript", category: "technical", proficiency: 92, strengthDescription: "Architected clean web systems, generic abstractions, and robust backend models." },
-        { name: "React / Next.js", category: "technical", proficiency: 90, strengthDescription: "Expert in hooks, context API, state managers, and server components." },
-        { name: "Node.js", category: "technical", proficiency: 85, strengthDescription: "Highly skilled in microservices, Express APIs, stream handling, and event-driven backends." },
-        { name: "PostgreSQL", category: "technical", proficiency: 80, strengthDescription: "Proficient in database design, indexing strategies, complex joins, and JSONB queries." },
-        { name: "Redis", category: "technical", proficiency: 75, strengthDescription: "Used for caching layer, session storage, and rate limiting in production." },
-        { name: "System Architecture", category: "technical", proficiency: 70, strengthDescription: "Good grasp of horizontal scaling, API gateways, load balancers, and caching." },
-        { name: "Collaboration", category: "soft", proficiency: 88, strengthDescription: "Experienced leading cross-functional teams, managing sprints, and collaborating with UX." },
-        { name: "Problem Solving", category: "soft", proficiency: 94, strengthDescription: "Excellent algorithmic thinking, code optimization, and debug automation." },
-        { name: "Machine Learning (Basic)", category: "technical", proficiency: 40, strengthDescription: "Familiar with basic model training concepts, tokenization, and vector embeddings." }
+        { name: "TypeScript", category: "technical", proficiency: 92, strengthDescription: "Architected clean web systems, generic abstractions, and robust backend models.", scoreJustification: "Assigned 92% due to 4+ years of active design, typing complex asynchronous flows, and library orchestration without strict guidance." },
+        { name: "React / Next.js", category: "technical", proficiency: 90, strengthDescription: "Expert in hooks, context API, state managers, and server components.", scoreJustification: "Assigned 90% because of successful leadership in rebuilding dashboard pages and mastering advanced state lifecycle behaviors." },
+        { name: "Node.js", category: "technical", proficiency: 85, strengthDescription: "Highly skilled in microservices, Express APIs, stream handling, and event-driven backends.", scoreJustification: "Assigned 85% reflecting proven capabilities in designing real-time telemetry APIs and integrating fast Redis microservices." },
+        { name: "PostgreSQL", category: "technical", proficiency: 80, strengthDescription: "Proficient in database design, indexing strategies, complex joins, and JSONB queries.", scoreJustification: "Assigned 80% due to clear optimization history, reducing database queries by 30% via schema redesigns and custom indices." },
+        { name: "Redis", category: "technical", proficiency: 75, strengthDescription: "Used for caching layer, session storage, and rate limiting in production.", scoreJustification: "Assigned 75% as they have successfully deployed caching for high-scale microservices but have not dealt with clustering or sentinel configs." },
+        { name: "System Architecture", category: "technical", proficiency: 70, strengthDescription: "Good grasp of horizontal scaling, API gateways, load balancers, and caching.", scoreJustification: "Assigned 70% reflecting a strong theoretical understanding and practical API designs, with minor gaps in global multi-cloud setups." },
+        { name: "Collaboration", category: "soft", proficiency: 88, strengthDescription: "Experienced leading cross-functional teams, managing sprints, and collaborating with UX.", scoreJustification: "Assigned 88% based on their active leadership of a 4-engineer team and successful alignment with design specialists." },
+        { name: "Problem Solving", category: "soft", proficiency: 94, strengthDescription: "Excellent algorithmic thinking, code optimization, and debug automation.", scoreJustification: "Assigned 94% due to outstanding achievements in system-wide performance tuning (Next.js loads improved by 42%)." },
+        { name: "Machine Learning (Basic)", category: "technical", proficiency: 40, strengthDescription: "Familiar with basic model training concepts, tokenization, and vector embeddings.", scoreJustification: "Assigned 40% because of introductory exposure, with a solid foundational interest but lacking formal model development experience." }
       ],
       certifications: [
         { name: "AWS Certified Developer – Associate", issuingOrganization: "Amazon Web Services", issueDate: "2023" }
@@ -224,13 +224,13 @@ export const SAMPLE_RESUMES: Record<string, { label: string; description: string
         }
       ],
       skills: [
-        { name: "Digital Campaign Strategy", category: "domain", proficiency: 90, strengthDescription: "Deep expertise in cost-per-acquisition (CPA) models, channel attribution, and funnel optimization." },
-        { name: "SQL", category: "technical", proficiency: 65, strengthDescription: "Able to write SELECT, JOIN, GROUP BY, and common table expressions (CTEs) for cohort analyses." },
-        { name: "Tableau / BI Tools", category: "technical", proficiency: 75, strengthDescription: "Built interactive corporate dashboards, data sources, and automated alerts." },
-        { name: "Google Analytics 4", category: "technical", proficiency: 85, strengthDescription: "Advanced user of custom dimensions, event tracking, and funnel explorations." },
-        { name: "Communication & Pitching", category: "soft", proficiency: 95, strengthDescription: "Masterful at translating cold quantitative charts into compelling stories for executive sponsors." },
-        { name: "Analytical Thinking", category: "soft", proficiency: 88, strengthDescription: "Data-first mindset, always isolating variables, conducting A/B tests, and verifying sample sizes." },
-        { name: "Python (Data Science)", category: "technical", proficiency: 30, strengthDescription: "Familiar with Jupyter Notebooks, basic Pandas dataframes, and Matplotlib plotting." }
+        { name: "Digital Campaign Strategy", category: "domain", proficiency: 90, strengthDescription: "Deep expertise in cost-per-acquisition (CPA) models, channel attribution, and funnel optimization.", scoreJustification: "Assigned 90% due to 5+ years of active campaign stewardship, leading metrics growth and optimizing marketing ROIs by 18%." },
+        { name: "SQL", category: "technical", proficiency: 65, strengthDescription: "Able to write SELECT, JOIN, GROUP BY, and common table expressions (CTEs) for cohort analyses.", scoreJustification: "Assigned 65% reflecting solid competence in basic to intermediate SQL querying and cohort data extraction, but lacks advanced windowing/stored procedures experience." },
+        { name: "Tableau / BI Tools", category: "technical", proficiency: 75, strengthDescription: "Built interactive corporate dashboards, data sources, and automated alerts.", scoreJustification: "Assigned 75% for custom dashboard development that streamlined reporting, saving weekly manual hours for leadership." },
+        { name: "Google Analytics 4", category: "technical", proficiency: 85, strengthDescription: "Advanced user of custom dimensions, event tracking, and funnel explorations.", scoreJustification: "Assigned 85% given daily experience tracking subscriber acquisitions, designing funnels, and optimizing user journeys." },
+        { name: "Communication & Pitching", category: "soft", proficiency: 95, strengthDescription: "Masterful at translating cold quantitative charts into compelling stories for executive sponsors.", scoreJustification: "Assigned 95% due to exceptional presentation skills, demonstrated by securing campaign budget approvals and reporting directly to C-suite." },
+        { name: "Analytical Thinking", category: "soft", proficiency: 88, strengthDescription: "Data-first mindset, always isolating variables, conducting A/B tests, and verifying sample sizes.", scoreJustification: "Assigned 88% due to systematic optimization of campaign funnels using quantitative tests rather than aesthetic intuition." },
+        { name: "Python (Data Science)", category: "technical", proficiency: 30, strengthDescription: "Familiar with Jupyter Notebooks, basic Pandas dataframes, and Matplotlib plotting.", scoreJustification: "Assigned 30% due to introductory level; understands basic syntax and can manipulate small tables, but cannot build complex ML pipelines yet." }
       ],
       certifications: [
         { name: "Google Analytics Individual Qualification (GAIQ)", issuingOrganization: "Google", issueDate: "2021" },

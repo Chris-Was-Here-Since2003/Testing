@@ -628,9 +628,20 @@ export default function AnalysisDashboard({ data, onReset }: AnalysisDashboardPr
                       </div>
 
                       {skill.strengthDescription && (
-                        <p className="text-xs text-gray-500 italic leading-relaxed">
-                          "{skill.strengthDescription}"
-                        </p>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                              "{skill.strengthDescription}"
+                          </p>
+                      )}
+
+                      {skill.scoreJustification && (
+                          <div className="bg-indigo-50/20 border border-indigo-100/40 p-2.5 rounded-lg space-y-1 mt-auto">
+                              <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wide block">
+                                  Score Justification
+                              </span>
+                              <p className="text-xs text-gray-600 leading-relaxed">
+                                  {skill.scoreJustification}
+                              </p>
+                          </div>
                       )}
                     </div>
                   ))}

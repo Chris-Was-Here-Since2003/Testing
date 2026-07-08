@@ -28,6 +28,7 @@ export interface SkillItem {
   category: string; // "technical", "soft", or "domain"
   proficiency: number; // 1-100
   strengthDescription?: string;
+  scoreJustification?: string;
 }
 
 export interface Certification {
