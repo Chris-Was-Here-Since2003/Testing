@@ -357,9 +357,20 @@ const RESUME_ANALYSIS_SCHEMA = {
               type: { type: Type.STRING, description: "missing (essential skills needed now), emerging (emerging trends), or critical (immediate priority)" },
               priority: { type: Type.STRING, description: "Low, Medium, or High" },
               impactDescription: { type: Type.STRING, description: "Why this gap is holding back competitiveness or career scaling" },
-              actionableRecommendation: { type: Type.STRING, description: "Concrete recommendation: specific certifications, project ideas, tools, or courses to fill this gap" }
+              actionableRecommendation: { type: Type.STRING, description: "Concrete recommendation: specific certifications, project ideas, tools, or courses to fill this gap" },
+              learningRecommendations: {
+                type: Type.OBJECT,
+                description: "Highly structured learning path recommendation resources for this specific missing skill",
+                properties: {
+                  courses: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific curated online courses or platforms (e.g. freeCodeCamp, Codecademy, Coursera, YouTube playlists)" },
+                  certifications: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific industry-recognized certifications" },
+                  books: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Highly regarded books, documentation resources, or manuals" },
+                  projects: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Highly detailed hands-on project ideas to build to master this skill" }
+                },
+                required: ["courses", "certifications", "books", "projects"]
+              }
             },
-            required: ["skillName", "type", "priority", "impactDescription", "actionableRecommendation"]
+            required: ["skillName", "type", "priority", "impactDescription", "actionableRecommendation", "learningRecommendations"]
           }
         },
         strategicAdvice: { type: Type.STRING, description: "High-level personal coaching advice for future-proofing their career." }
@@ -402,7 +413,11 @@ app.post("/api/analyze-resume", async (req, res) => {
          - Today (2026)
          - 5 Years in the Future (circa 2031)
          In corporate labor economics context, analyze technological disruption, AI growth, automation risk, and stack shifts for each epoch and provide context.
-      5. Perform a Skill Gap Analysis identifying missing/emerging skills with highly customized, practical recommendations.
+      5. Perform a Skill Gap Analysis identifying missing/emerging skills with highly customized, practical recommendations. For each missing or critical skill gap, provide detailed 'learningRecommendations' detailing:
+         - Curated courses or learning platforms (such as freeCodeCamp, Codecademy, Coursera, or YouTube playlists).
+         - Reputable, industry-recognized certifications.
+         - High-quality, specific books or documentation resources.
+         - Practical, concrete project ideas the candidate can build to demonstrate and master the skill.
     `;
 
     let contents: any;

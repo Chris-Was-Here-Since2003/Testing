@@ -75,12 +75,20 @@ export interface CompetitivenessScores {
   fiveYearsFuture: EpochScore;
 }
 
+export interface LearningRecommendations {
+  courses?: string[];
+  certifications?: string[];
+  books?: string[];
+  projects?: string[];
+}
+
 export interface SkillGap {
   skillName: string;
   type: string; // "missing", "emerging", or "critical"
   priority: string; // "Low", "Medium", "High"
   impactDescription: string;
   actionableRecommendation: string;
+  learningRecommendations?: LearningRecommendations;
 }
 
 export interface SkillGapAnalysis {
