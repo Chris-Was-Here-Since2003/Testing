@@ -47,10 +47,14 @@ export default function AccountModal({ onClose, onLoginSuccess }: AccountModalPr
 
     try {
       const endpoint = activeTab === "login" ? "/api/auth/login" : "/api/auth/register";
+      const payload = activeTab === "register" 
+        ? { email, password, fullName: name.trim(), role: "JOB_SEEKER" }
+        : { email, password };
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();

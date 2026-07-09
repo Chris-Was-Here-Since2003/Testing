@@ -5,6 +5,8 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import { sqlGet, sqlAll, sqlRun } from "./serverDb";
+import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 
 dotenv.config();
 
@@ -19,15 +21,15 @@ app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 
 // 1. User Registration Route
 app.post("/api/auth/register", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, fullName, role } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required." });
   }
 
   try {
     // Check if user already exists
-    const existingUser = await sqlGet<{ id: string }>(
-      "SELECT id FROM users WHERE email = ?",
+    const existingUser = await sqlGet<{ user_id: string }>(
+      "SELECT user_id FROM users WHERE email = ?",
       [email]
     );
 
@@ -35,18 +37,27 @@ app.post("/api/auth/register", async (req, res) => {
       return res.status(400).json({ error: "An account with this email already exists." });
     }
 
-    // Generate a secure unique user ID (e.g., firebase-styled unique ID)
-    const userId = "user_" + Math.random().toString(36).substr(2, 9);
+    // Generate secure password hash using bcrypt
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Generate a secure unique UUID v4 for user_id
+    const userId = randomUUID();
+
+    // Determine role (defaulting to JOB_SEEKER)
+    const userRole = role || "JOB_SEEKER";
+
+    // Determine full name
+    const nameToSave = fullName || null;
 
     // Save to relational SQL table
     await sqlRun(
-      "INSERT INTO users (id, email, password) VALUES (?, ?, ?)",
-      [userId, email, password]
+      "INSERT INTO users (user_id, email, password_hash, role, full_name, del_flg) VALUES (?, ?, ?, ?, ?, 0)",
+      [userId, email, passwordHash, userRole, nameToSave]
     );
 
     res.status(201).json({
       message: "Account registered successfully in SQL database.",
-      user: { id: userId, email }
+      user: { id: userId, user_id: userId, email, role: userRole, fullName: nameToSave }
     });
   } catch (err: any) {
     console.error("Registration error:", err);
@@ -62,19 +73,25 @@ app.post("/api/auth/login", async (req, res) => {
   }
 
   try {
-    // Select user from SQL table
-    const user = await sqlGet<{ id: string; email: string; password?: string }>(
-      "SELECT id, email, password FROM users WHERE email = ?",
+    // Select user from SQL table, filtering out soft-deleted accounts
+    const user = await sqlGet<{ user_id: string; email: string; password_hash: string; role: string; full_name: string | null; del_flg: number }>(
+      "SELECT user_id, email, password_hash, role, full_name, del_flg FROM users WHERE email = ?",
       [email]
     );
 
-    if (!user || user.password !== password) {
+    if (!user || user.del_flg === 1) {
+      return res.status(401).json({ error: "Invalid email or password." });
+    }
+
+    // Compare bcrypt hashes
+    const isPasswordCorrect = await bcrypt.compare(password, user.password_hash);
+    if (!isPasswordCorrect) {
       return res.status(401).json({ error: "Invalid email or password." });
     }
 
     res.json({
       message: "Logged in successfully.",
-      user: { id: user.id, email: user.email }
+      user: { id: user.user_id, user_id: user.user_id, email: user.email, role: user.role, fullName: user.full_name }
     });
   } catch (err: any) {
     console.error("Login error:", err);

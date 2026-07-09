@@ -18,39 +18,68 @@ export const db = new sqlite3.Database(DB_FILE, (err) => {
 // Create tables in SQL format
 function initializeTables() {
   db.serialize(() => {
-    // 1. Users Table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `, (err) => {
+    // Read table info to see if we have old schema format, if so, migrate
+    db.all("PRAGMA table_info(users)", (err, rows) => {
       if (err) {
-        console.error("Error creating users table in SQL database:", err);
-      } else {
-        console.log("SQL Table 'users' verified/created.");
+        console.error("Error checking table info for users:", err);
+        createTables();
+        return;
       }
-    });
 
-    // 2. Analyses Table (Relational User Storage)
-    db.run(`
-      CREATE TABLE IF NOT EXISTS analyses (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        name TEXT NOT NULL,
-        parsed_data TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-      )
-    `, (err) => {
-      if (err) {
-        console.error("Error creating analyses table in SQL database:", err);
+      const hasOldId = rows && rows.some((col: any) => col.name === "id");
+      const hasUserId = rows && rows.some((col: any) => col.name === "user_id");
+
+      if (hasOldId || (rows && rows.length > 0 && !hasUserId)) {
+        console.log("Old users schema format detected. Re-creating tables with the updated schema...");
+        db.serialize(() => {
+          db.run("DROP TABLE IF EXISTS analyses");
+          db.run("DROP TABLE IF EXISTS users");
+          createTables();
+        });
       } else {
-        console.log("SQL Table 'analyses' verified/created.");
+        createTables();
       }
     });
+  });
+}
+
+function createTables() {
+  // 1. Users Table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      user_id VARCHAR(36) PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      role TEXT CHECK(role IN ('JOB_SEEKER', 'EMPLOYER', 'ADMIN')) DEFAULT 'JOB_SEEKER' NOT NULL,
+      full_name VARCHAR(150),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP,
+      del_flg BOOLEAN DEFAULT 0
+    )
+  `, (err) => {
+    if (err) {
+      console.error("Error creating users table in SQL database:", err);
+    } else {
+      console.log("SQL Table 'users' verified/created with updated schema.");
+    }
+  });
+
+  // 2. Analyses Table (Relational User Storage)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS analyses (
+      id TEXT PRIMARY KEY,
+      user_id VARCHAR(36) NOT NULL,
+      name TEXT NOT NULL,
+      parsed_data TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    )
+  `, (err) => {
+    if (err) {
+      console.error("Error creating analyses table in SQL database:", err);
+    } else {
+      console.log("SQL Table 'analyses' verified/created.");
+    }
   });
 }
 

@@ -251,8 +251,8 @@ export default function App() {
   const [analysisResult, setAnalysisResult] = useState<ResumeAnalysisResult | null>(null);
   const [resetKey, setResetKey] = useState(0);
 
-  // Core navigation state: "home" | "analysis" | "applications"
-  const [currentTab, setCurrentTab] = useState<"home" | "analysis" | "applications">("home");
+  // Core navigation state: "home" | "analysis"
+  const [currentTab, setCurrentTab] = useState<"home" | "analysis">("home");
 
   // Job Search, Filters, Applications & Details
   const [jobSearch, setJobSearch] = useState("");
@@ -612,21 +612,6 @@ export default function App() {
             )}
           </button>
 
-          <button 
-            onClick={() => setCurrentTab("applications")}
-            className={`nav-link px-4 py-2 rounded-md text-sm font-semibold transition-all cursor-pointer relative ${
-              currentTab === "applications" 
-                ? "bg-[#DBEAFE] text-blue-600 font-bold" 
-                : "text-slate-500 hover:bg-[#DBEAFE]/40 hover:text-blue-600"
-            }`}
-          >
-            Applications
-            {appliedJobs.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-600 text-white rounded-full font-bold">
-                {appliedJobs.length}
-              </span>
-            )}
-          </button>
         </div>
 
         {/* Right: Actions (Notifications + User profile + SQL history) */}
@@ -781,7 +766,7 @@ export default function App() {
       {/* ================================================
            MAIN VIEWS PORT
            ================================================ */}
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full p-[10%]">
         {isLoading ? (
           /* Custom Loading Screen */
           <div className="w-full max-w-lg mx-auto text-center space-y-8 py-24 px-4" id="loading-state">
@@ -1278,96 +1263,7 @@ export default function App() {
               </div>
             )}
 
-            {currentTab === "applications" && (
-              /* ================================================
-                   APPLICATIONS TRACKER VIEW
-                   ================================================ */
-              <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-8">
-                <div className="mb-6">
-                  <h1 className="text-2xl font-black text-slate-900">Applications History</h1>
-                  <p className="text-xs text-slate-500 mt-1">Real-time status tracking inside SQLite Relational account database</p>
-                </div>
 
-                {appliedJobs.length === 0 ? (
-                  <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center max-w-xl mx-auto my-12">
-                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                      📋
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-800">No Applications Submitted</h3>
-                    <p className="text-sm text-slate-500 mt-1 mb-6">
-                      Browse job recommendations on the home tab and submit your resume profile dynamically!
-                    </p>
-                    <button 
-                      onClick={() => setCurrentTab("home")}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm border-0 cursor-pointer transition-colors"
-                    >
-                      Browse Available Jobs
-                    </button>
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wide">Tracking {appliedJobs.length} submissions</span>
-                      <span className="text-xs text-slate-400 font-mono">SQLite Account Sync Complete</span>
-                    </div>
-
-                    <div className="divide-y divide-slate-100">
-                      {appliedJobs.map((jobId, idx) => {
-                        const job = allJobs.find(j => j.id === jobId);
-                        if (!job) return null;
-
-                        // Give them pseudo statuses for rich experience
-                        const status = idx === 0 ? "Reviewing" : idx === 1 ? "Interview Scheduled" : "Applied Successfully";
-                        const statusColor = status === "Reviewing" 
-                          ? "bg-blue-50 text-blue-700 border-blue-200" 
-                          : status === "Interview Scheduled" 
-                          ? "bg-purple-50 text-purple-700 border-purple-200" 
-                          : "bg-emerald-50 text-emerald-700 border-emerald-200";
-
-                        return (
-                          <div key={jobId} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
-                            <div className="flex gap-4">
-                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-sm shadow-xs shrink-0 ${job.logoBg}`}>
-                                {job.logoLetter}
-                              </div>
-                              <div>
-                                <h3 className="font-bold text-slate-900 text-base">{job.title}</h3>
-                                <p className="text-xs text-slate-500 font-medium mt-0.5">{job.company}</p>
-                                <div className="flex items-center gap-2 text-xs text-slate-400 mt-2 flex-wrap">
-                                  <span>📍 {job.location}</span>
-                                  <span>•</span>
-                                  <span>💼 {job.type}</span>
-                                  <span>•</span>
-                                  <span className="text-emerald-600 font-bold">{job.salary || "₱40k - ₱60k"}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 justify-between sm:justify-end">
-                              <div className="text-left sm:text-right">
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${statusColor}`}>
-                                  {status}
-                                </span>
-                                <span className="block text-[10px] text-slate-400 mt-1 flex items-center gap-1 sm:justify-end">
-                                  <Calendar className="w-3 h-3" /> Applied on {new Date().toLocaleDateString()}
-                                </span>
-                              </div>
-
-                              <button
-                                onClick={() => setSelectedJob(job)}
-                                className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors cursor-pointer"
-                              >
-                                View
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         )}
       </main>
