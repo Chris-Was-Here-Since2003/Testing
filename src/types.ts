@@ -121,3 +121,19 @@ export interface SavedResume {
   parsedData: ResumeAnalysisResult;
 }
 
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  logoLetter: string;
+  logoBg: string;
+  type: string;
+  experience: string;
+  skills: string[];
+  salary: string;
+  postedDate: string;
+  description: string;
+  responsibilities: string[];
+}
+

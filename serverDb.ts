@@ -64,7 +64,28 @@ function createTables() {
     }
   });
 
-  // 2. Analyses Table (Relational User Storage)
+  // 2. Resumes Table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS resumes (
+      resume_id VARCHAR(36) PRIMARY KEY,
+      seeker_id VARCHAR(36) NOT NULL,
+      file_url VARCHAR(500) NOT NULL,
+      file_type TEXT CHECK(file_type IN ('PDF', 'DOCX')) DEFAULT 'PDF' NOT NULL,
+      detected_skills TEXT,
+      is_analyzed BOOLEAN DEFAULT 0 NOT NULL,
+      uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      del_flg BOOLEAN DEFAULT 0,
+      FOREIGN KEY(seeker_id) REFERENCES users(user_id) ON DELETE CASCADE
+    )
+  `, (err) => {
+    if (err) {
+      console.error("Error creating resumes table in SQL database:", err);
+    } else {
+      console.log("SQL Table 'resumes' verified/created with user parameters.");
+    }
+  });
+
+  // 3. Analyses Table (Relational User Storage)
   db.run(`
     CREATE TABLE IF NOT EXISTS analyses (
       id TEXT PRIMARY KEY,

@@ -29,220 +29,12 @@ import {
 import ResumeUpload from "./components/ResumeUpload";
 import AnalysisDashboard from "./components/AnalysisDashboard";
 import AccountModal from "./components/AccountModal";
-import { ResumeAnalysisResult, User, SavedResume } from "./types";
+import { ResumeAnalysisResult, User, SavedResume, Job } from "./types";
 import { SAMPLE_RESUMES } from "./sampleData";
-
-interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  logoLetter: string;
-  logoBg: string;
-  type: string;
-  experience: string;
-  skills: string[];
-  salary: string;
-  postedDate: string;
-  description: string;
-  responsibilities: string[];
-}
-
-const DEFAULT_JOBS: Job[] = [
-  {
-    id: "job-recom-1",
-    title: "Data Analyst",
-    company: "Google Philippines",
-    location: "Taguig, Metro Manila",
-    logoLetter: "G",
-    logoBg: "bg-red-50 text-red-600",
-    type: "Full-time",
-    experience: "Mid Level",
-    skills: ["Python", "SQL", "Data Analysis"],
-    salary: "₱75,000 – ₱110,000",
-    postedDate: "2 hours ago",
-    description: "Google is looking for a Data Analyst to join our decision support and business intelligence team. In this role, you will analyze large datasets, build dashboard structures, and present key business performance findings to leaders.",
-    responsibilities: [
-      "Extract and clean data from distributed warehouses using SQL.",
-      "Build interactive dashboard reports to support executive decisions.",
-      "Analyze business metrics trends and identify growth opportunities."
-    ]
-  },
-  {
-    id: "job-recom-2",
-    title: "Backend Developer",
-    company: "Accenture PH",
-    location: "Cebu City",
-    logoLetter: "A",
-    logoBg: "bg-purple-50 text-purple-600",
-    type: "Full-time",
-    experience: "Mid Level",
-    skills: ["Node.js", "PostgreSQL", "REST API", "TypeScript"],
-    salary: "₱55,000 – ₱85,000",
-    postedDate: "5 hours ago",
-    description: "Accenture is hiring a Backend Developer to build scalable enterprise APIs and microservices. You will collaborate with client partners, design modular schemas, and optimize pipeline deployments.",
-    responsibilities: [
-      "Develop secure, high-throughput RESTful and GraphQL APIs.",
-      "Optimize relational database queries and PostgreSQL data structures.",
-      "Implement automated unit and integration test coverage."
-    ]
-  },
-  {
-    id: "job-recom-3",
-    title: "Software Engineer",
-    company: "Symph Co.",
-    location: "Cebu City",
-    logoLetter: "S",
-    logoBg: "bg-blue-50 text-blue-600",
-    type: "Full-time",
-    experience: "Mid Level",
-    skills: ["JavaScript", "React", "Git", "TypeScript"],
-    salary: "₱45,000 – ₱70,000",
-    postedDate: "8 hours ago",
-    description: "Symph is seeking a Software Engineer to join our product development studio. We build rapid prototypes and digital products for startups and enterprises using modern React, Node, and collaborative workflows.",
-    responsibilities: [
-      "Collaborate with designers to implement pixel-perfect user interfaces.",
-      "Participate in daily standups and agile sprint plannings.",
-      "Build highly responsive client-side routing and state managers."
-    ]
-  },
-  {
-    id: "job-recom-4",
-    title: "IT Support Specialist",
-    company: "IBM Philippines",
-    location: "Quezon City",
-    logoLetter: "I",
-    logoBg: "bg-indigo-50 text-indigo-600",
-    type: "Full-time",
-    experience: "Entry Level",
-    skills: ["Networking", "Linux", "Troubleshooting"],
-    salary: "₱30,000 – ₱45,000",
-    postedDate: "1 day ago",
-    description: "IBM Philippines is recruiting an IT Support Specialist to provide critical technical systems troubleshooting and infrastructure support.",
-    responsibilities: [
-      "Troubleshoot server and client operating system configurations.",
-      "Monitor corporate networks, firewalls, and active directories.",
-      "Document system failures and escalate complex issues."
-    ]
-  },
-  {
-    id: "job-recom-5",
-    title: "Cloud Engineer",
-    company: "Cloudstaff PH",
-    location: "Remote",
-    logoLetter: "C",
-    logoBg: "bg-orange-50 text-orange-600",
-    type: "Remote",
-    experience: "Senior Level",
-    skills: ["AWS", "Docker", "CI/CD", "Kubernetes"],
-    salary: "₱90,000 – ₱140,000",
-    postedDate: "1 day ago",
-    description: "Cloudstaff is looking for an experienced Cloud Engineer to manage our distributed AWS setups and container orchestration setups.",
-    responsibilities: [
-      "Manage AWS container workloads using ECS, EKS, and Fargate.",
-      "Establish automated continuous deployment pipelines.",
-      "Monitor system uptime, resource utilization, and cost metrics."
-    ]
-  },
-  {
-    id: "job-recom-6",
-    title: "QA Engineer",
-    company: "TechSource Inc.",
-    location: "Makati, Metro Manila",
-    logoLetter: "T",
-    logoBg: "bg-teal-50 text-teal-600",
-    type: "Full-time",
-    experience: "Entry Level",
-    skills: ["Testing", "Selenium", "Jira"],
-    salary: "₱35,000 – ₱50,000",
-    postedDate: "2 days ago",
-    description: "TechSource Inc. is hiring a QA Engineer to automate user behavior testing and maintain quality control metrics.",
-    responsibilities: [
-      "Write automated end-to-end regression tests using Selenium.",
-      "Perform thorough manual exploratory testing on web releases.",
-      "Report, track, and document software bugs in Jira boards."
-    ]
-  }
-];
-
-const RECENT_JOBS: Job[] = [
-  {
-    id: "job-recent-1",
-    title: "Frontend Developer",
-    company: "Nexus Digital PH",
-    location: "Cebu City",
-    logoLetter: "N",
-    logoBg: "bg-emerald-50 text-emerald-600",
-    type: "Full-time",
-    experience: "Mid Level",
-    skills: ["React", "CSS", "HTML", "TypeScript"],
-    salary: "₱35,000 – ₱55,000",
-    postedDate: "2 hours ago",
-    description: "Nexus Digital is building high-performance marketing web systems. We need a frontend developer who loves smooth micro-interactions and atomic layouts.",
-    responsibilities: [
-      "Implement responsive user interfaces using React and modern CSS.",
-      "Optimize sites for high score on Lighthouse audits.",
-      "Work alongside design leads to establish unified component systems."
-    ]
-  },
-  {
-    id: "job-recent-2",
-    title: "UI/UX Designer",
-    company: "CreativeHub Co.",
-    location: "Remote",
-    logoLetter: "C",
-    logoBg: "bg-pink-50 text-pink-600",
-    type: "Remote",
-    experience: "Senior Level",
-    skills: ["Figma", "Wireframing", "UI Design"],
-    salary: "₱30,000 – ₱50,000",
-    postedDate: "5 hours ago",
-    description: "CreativeHub needs a Senior UI/UX Designer to own product experience maps from early user stories to high-fidelity clickable Figma specifications.",
-    responsibilities: [
-      "Conduct user research interviews and extract interaction maps.",
-      "Build high-fidelity layouts, interactions, and prototype mockups.",
-      "Handoff clear assets and style guides to engineering squads."
-    ]
-  },
-  {
-    id: "job-recent-3",
-    title: "Data Analyst",
-    company: "Analytics Corp",
-    location: "Manila",
-    logoLetter: "A",
-    logoBg: "bg-cyan-50 text-cyan-600",
-    type: "Hybrid",
-    experience: "Senior Level",
-    skills: ["Tableau", "Excel", "SQL"],
-    salary: "₱40,000 – ₱60,000",
-    postedDate: "8 hours ago",
-    description: "Analytics Corp provides customized consulting reports for agricultural operations. We need a generalist data expert to build reports.",
-    responsibilities: [
-      "Prepare automated report templates using Excel and Tableau.",
-      "Conduct exploratory SQL queries across commercial data silos.",
-      "Verify system metrics accuracy and document dashboard definitions."
-    ]
-  },
-  {
-    id: "job-recent-4",
-    title: "Backend Developer",
-    company: "DevForce Solutions",
-    location: "Davao City",
-    logoLetter: "D",
-    logoBg: "bg-violet-50 text-violet-600",
-    type: "Full-time",
-    experience: "Senior Level",
-    skills: ["Python", "Django", "PostgreSQL"],
-    salary: "₱38,000 – ₱58,000",
-    postedDate: "1 day ago",
-    description: "DevForce delivers custom logistics pipelines. Join us as a backend specialist to orchestrate geolocation matching systems.",
-    responsibilities: [
-      "Design server-side logic in Python and Django frameworks.",
-      "Deploy optimized PostgreSQL triggers and transaction sequences.",
-      "Establish secure third-party billing connections and APIs."
-    ]
-  }
-];
+import { DEFAULT_JOBS, RECENT_JOBS } from "./jobsData";
+import { JobCard } from "./components/JobCard";
+import { RecentJobCard } from "./components/RecentJobCard";
+import { JobDetailsModal } from "./components/JobDetailsModal";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(false);
@@ -472,23 +264,6 @@ export default function App() {
     setIsCurrentResumeSaved(false);
     setResetKey((prev) => prev + 1);
     setCurrentTab("analysis"); // Stay in the upload zone
-  };
-
-  // Dynamically calculate matching scores and tags
-  const getSkillsIntersection = (jobSkills: string[]) => {
-    if (!analysisResult) return { intersection: [], percentage: 0 };
-    const mySkills = analysisResult.skills.map(s => s.name.toLowerCase());
-    
-    // Find skill matches
-    const intersection = jobSkills.filter(js => 
-      mySkills.some(ms => ms.includes(js.toLowerCase()) || js.toLowerCase().includes(ms))
-    );
-    
-    // Match score formula: base 50% + dynamic percentage
-    const ratio = jobSkills.length > 0 ? (intersection.length / jobSkills.length) : 0;
-    const percentage = Math.round(55 + ratio * 43); // scaled beautifully between 55% and 98%
-    
-    return { intersection, percentage };
   };
 
   // Get dynamic name of current user
@@ -965,84 +740,16 @@ export default function App() {
                     </div>
                   ) : (
                     <div className="jobs-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {filteredRecommendedJobs.map((job) => {
-                        // Calculate dynamic match percentage
-                        const { intersection, percentage } = getSkillsIntersection(job.skills);
-                        const displayedScore = analysisResult ? percentage : (job.id === "job-recom-1" ? 92 : job.id === "job-recom-2" ? 88 : job.id === "job-recom-3" ? 85 : job.id === "job-recom-4" ? 81 : job.id === "job-recom-5" ? 78 : 75);
-
-                        return (
-                          <article key={job.id} className="job-card bg-white rounded-2xl p-5 border border-[#E5E7EB] hover:border-blue-100 hover:shadow-md transition-all flex flex-col gap-4">
-                            <div className="job-card-top flex justify-between items-start">
-                              <div className={`company-logo w-11 h-11 rounded-xl flex items-center justify-center font-black text-sm shadow-xs ${job.logoBg}`} aria-hidden="true">
-                                {job.logoLetter}
-                              </div>
-                              <span className={`match-badge text-[11px] font-bold px-2.5 py-1 rounded-full text-white ${
-                                displayedScore >= 85 ? "bg-emerald-500" : "bg-blue-500"
-                              }`}>
-                                {displayedScore}% Match
-                              </span>
-                            </div>
-
-                            <div>
-                              <h3 className="job-title text-base font-bold text-slate-900 leading-snug">{job.title}</h3>
-                              <p className="company-name text-xs text-slate-500 mt-0.5">{job.company}</p>
-                            </div>
-
-                            <div className="job-location text-xs text-slate-500 flex items-center gap-1">
-                              <span>📍 {job.location}</span>
-                              <span className="text-slate-300">•</span>
-                              <span>💼 {job.type}</span>
-                            </div>
-
-                            {/* Match bar */}
-                            <div className="match-bar-wrap flex flex-col gap-1">
-                              <div className="match-bar-label flex justify-between text-[11px] font-semibold text-slate-400">
-                                <span>Skills Match</span>
-                                <span className="text-emerald-500 font-bold">{displayedScore}%</span>
-                              </div>
-                              <div className="match-bar-track h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div 
-                                  className="match-bar-fill h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full"
-                                  style={{ width: `${displayedScore}%`, transition: "width 1s ease-in-out" }}
-                                ></div>
-                              </div>
-                            </div>
-
-                            <div className="skills-row flex flex-wrap gap-1">
-                              {job.skills.map((skill, index) => {
-                                const isMatched = analysisResult && intersection.some(s => s.toLowerCase().includes(skill.toLowerCase()) || skill.toLowerCase().includes(s.toLowerCase()));
-                                return (
-                                  <span 
-                                    key={index} 
-                                    className={`skill-tag text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                                      isMatched 
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
-                                        : "bg-blue-50 text-blue-600 border-blue-100"
-                                    }`}
-                                  >
-                                    {isMatched && "✓ "}{skill}
-                                  </span>
-                                );
-                              })}
-                            </div>
-
-                            <div className="job-card-actions flex gap-2 mt-auto pt-2">
-                              <button 
-                                onClick={() => setSelectedJob(job)}
-                                className="btn-view flex-1 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-2 rounded-lg text-xs transition-colors cursor-pointer"
-                              >
-                                View Details
-                              </button>
-                              <button 
-                                onClick={() => handleApplyJob(job.id, job.title)}
-                                className="btn-apply flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-xs transition-colors cursor-pointer border-0"
-                              >
-                                {appliedJobs.includes(job.id) ? "Applied ✓" : "Apply Now"}
-                              </button>
-                            </div>
-                          </article>
-                        );
-                      })}
+                      {filteredRecommendedJobs.map((job) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          isApplied={appliedJobs.includes(job.id)}
+                          analysisResult={analysisResult}
+                          onViewDetails={setSelectedJob}
+                          onApply={handleApplyJob}
+                        />
+                      ))}
                     </div>
                   )}
                 </section>
@@ -1061,39 +768,13 @@ export default function App() {
                   ) : (
                     <div className="recent-jobs-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {filteredRecentJobs.map((job) => (
-                        <article key={job.id} className="recent-job-card bg-white rounded-2xl p-5 border border-[#E5E7EB] hover:border-blue-100 transition-all flex flex-col justify-between">
-                          <div>
-                            <span className="job-type-badge inline-block bg-blue-50 text-blue-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full mb-3">
-                              {job.type}
-                            </span>
-                            <h3 className="job-title text-sm font-bold text-slate-900 leading-snug">{job.title}</h3>
-                            <p className="company-name text-xs text-slate-500 mt-1">{job.company}</p>
-                            
-                            <div className="job-meta flex items-center gap-1.5 text-[11px] text-slate-400 mt-3 mb-2">
-                              <span>📍 {job.location}</span>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 border-t border-slate-50 pt-3">
-                            <div className="salary text-xs font-extrabold text-emerald-600 mb-1">{job.salary}</div>
-                            <div className="posted-date text-[10px] text-slate-400">Posted {job.postedDate}</div>
-                            
-                            <div className="flex gap-2 mt-3">
-                              <button 
-                                onClick={() => setSelectedJob(job)}
-                                className="w-1/2 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-bold rounded-lg border border-slate-200 transition-colors"
-                              >
-                                Detail
-                              </button>
-                              <button 
-                                onClick={() => handleApplyJob(job.id, job.title)}
-                                className="w-1/2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-lg border-0 transition-colors"
-                              >
-                                {appliedJobs.includes(job.id) ? "Applied" : "Apply"}
-                              </button>
-                            </div>
-                          </div>
-                        </article>
+                        <RecentJobCard
+                          key={job.id}
+                          job={job}
+                          isApplied={appliedJobs.includes(job.id)}
+                          onViewDetails={setSelectedJob}
+                          onApply={handleApplyJob}
+                        />
                       ))}
                     </div>
                   )}
@@ -1321,105 +1002,12 @@ export default function App() {
            JOB DETAILS DIALOG MODAL (Premium Interactive overlay)
            ================================================ */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto" id="job-detail-modal">
-          <div 
-            className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full overflow-hidden transform transition-all flex flex-col relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 flex items-start gap-4 pr-12 bg-slate-50/50">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm shrink-0 ${selectedJob.logoBg}`}>
-                {selectedJob.logoLetter}
-              </div>
-              <div>
-                <span className="inline-block bg-blue-50 text-blue-600 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full mb-1">
-                  {selectedJob.type}
-                </span>
-                <h3 className="text-lg font-black text-slate-900 leading-snug">{selectedJob.title}</h3>
-                <p className="text-xs text-slate-500 font-semibold">{selectedJob.company}</p>
-              </div>
-
-              <button 
-                onClick={() => setSelectedJob(null)}
-                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
-                aria-label="Close details"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto max-h-[60vh] space-y-6">
-              
-              {/* Job Metadata Bar */}
-              <div className="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl text-center border border-slate-100">
-                <div>
-                  <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Salary</span>
-                  <span className="text-xs font-extrabold text-emerald-600">{selectedJob.salary || "Negotiable"}</span>
-                </div>
-                <div className="border-x border-slate-200">
-                  <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Location</span>
-                  <span className="text-xs font-bold text-slate-800">{selectedJob.location}</span>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Experience</span>
-                  <span className="text-xs font-bold text-slate-800">{selectedJob.experience}</span>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">About the Role</h4>
-                <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                  {selectedJob.description}
-                </p>
-              </div>
-
-              {/* Responsibilities */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Key Responsibilities</h4>
-                <ul className="list-disc list-inside space-y-1.5 text-xs text-slate-600 leading-relaxed pl-1">
-                  {selectedJob.responsibilities.map((resp, idx) => (
-                    <li key={idx} className="font-medium">{resp}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Skills required */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Key Skills Required</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedJob.skills.map((skill, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full border border-blue-100">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Modal Actions */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex gap-3 justify-end">
-              <button 
-                onClick={() => setSelectedJob(null)}
-                className="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-semibold rounded-xl text-sm border border-slate-200 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-              <button 
-                onClick={() => {
-                  handleApplyJob(selectedJob.id, selectedJob.title);
-                  setSelectedJob(null);
-                }}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm border-0 transition-colors cursor-pointer shadow-md shadow-blue-100"
-              >
-                {appliedJobs.includes(selectedJob.id) ? "Already Applied ✓" : "Apply for Role"}
-              </button>
-            </div>
-
-          </div>
-        </div>
+        <JobDetailsModal
+          job={selectedJob}
+          isApplied={appliedJobs.includes(selectedJob.id)}
+          onClose={() => setSelectedJob(null)}
+          onApply={handleApplyJob}
+        />
       )}
 
       {/* Account Auth Modal Overlay */}
