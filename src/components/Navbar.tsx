@@ -9,13 +9,14 @@ import {
   Trash2, 
   LogOut, 
   User as UserIcon,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from "lucide-react";
 import { User, SavedResume, ResumeAnalysisResult } from "../types";
 
 interface NavbarProps {
-  currentTab: "home" | "analysis" | "interview";
-  setCurrentTab: (tab: "home" | "analysis" | "interview") => void;
+  currentTab: "home" | "analysis" | "interview" | "resume";
+  setCurrentTab: (tab: "home" | "analysis" | "interview" | "resume") => void;
   analysisResult: ResumeAnalysisResult | null;
   currentUser: User | null;
   savedResumes: SavedResume[];
@@ -111,6 +112,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <MessageSquare className="w-4 h-4 text-emerald-600 animate-pulse" />
           AI Interview Coach
+        </button>
+
+        <button 
+          onClick={() => setCurrentTab("resume")}
+          className={`nav-link px-4 py-2 rounded-md text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            currentTab === "resume" 
+              ? "bg-[#DBEAFE] text-blue-600 font-bold" 
+              : "text-slate-500 hover:bg-[#DBEAFE]/40 hover:text-blue-600"
+          }`}
+        >
+          <FileText className="w-4 h-4 text-purple-600 animate-pulse" />
+          AI Resume Builder
         </button>
       </div>
 

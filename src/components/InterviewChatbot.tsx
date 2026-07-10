@@ -13,7 +13,10 @@ import {
   Briefcase, 
   FileText, 
   ChevronRight,
-  UserCheck
+  UserCheck,
+  ChevronDown,
+  Search,
+  Check
 } from "lucide-react";
 import { ResumeAnalysisResult } from "../types";
 
@@ -63,6 +66,23 @@ const PRESET_TRACKS = [
   }
 ];
 
+// Popular tech roles to recommend
+const POPULAR_ROLES = [
+  "Frontend Engineer",
+  "Backend Engineer",
+  "Full Stack Developer",
+  "Mobile Developer (iOS/Android)",
+  "DevOps / SRE Specialist",
+  "Data Scientist / AI Engineer",
+  "Product Manager",
+  "UX/UI Designer",
+  "System Architect",
+  "Cloud Engineer",
+  "QA Automation Engineer",
+  "Cybersecurity Engineer",
+  "Data Engineer"
+];
+
 export const InterviewChatbot: React.FC<InterviewChatbotProps> = ({ analysisResult }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -80,7 +100,44 @@ export const InterviewChatbot: React.FC<InterviewChatbotProps> = ({ analysisResu
   const [customCompany, setCustomCompany] = useState("");
   const [useResumeContext, setUseResumeContext] = useState(!!analysisResult);
 
+  // Dropdown UI states
+  const [showRolesDropdown, setShowRolesDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowRolesDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Parse recommended roles from resume analysis
+  const getRecommendedRoles = () => {
+    const rolesSet = new Set<string>();
+    
+    if (analysisResult) {
+      // 1. Current & past roles from work experience
+      analysisResult.workExperience?.forEach(w => {
+        if (w.jobTitle) rolesSet.add(w.jobTitle.trim());
+      });
+      // 2. Future predicted transition roles from pathways
+      analysisResult.careerProgression?.pathways?.forEach(p => {
+        p.predictedRoles?.forEach(r => {
+          if (r.roleTitle) rolesSet.add(r.roleTitle.trim());
+        });
+      });
+    }
+    
+    return Array.from(rolesSet).filter(Boolean);
+  };
 
   // Auto scroll to bottom of chat
   useEffect(() => {
@@ -226,16 +283,132 @@ export const InterviewChatbot: React.FC<InterviewChatbotProps> = ({ analysisResu
               )}
             </div>
 
-            {/* Custom target role */}
-            <div className="space-y-1">
+            {/* Custom target role with Autocomplete Dropdown */}
+            <div className="space-y-1 relative" ref={dropdownRef}>
               <label className="block text-xs font-bold text-slate-700">Target Role</label>
-              <input 
-                type="text"
-                value={customRole}
-                onChange={(e) => setCustomRole(e.target.value)}
-                placeholder="e.g. Senior React Developer"
-                className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="relative">
+                <input 
+                  type="text"
+                  value={customRole}
+                  onChange={(e) => {
+                    setCustomRole(e.target.value);
+                    setShowRolesDropdown(true);
+                  }}
+                  onFocus={() => setShowRolesDropdown(true)}
+                  placeholder="e.g. Senior React Developer"
+                  className="w-full text-xs pl-8 pr-8 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
+                />
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Search className="w-3.5 h-3.5" />
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowRolesDropdown(!showRolesDropdown);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer p-0.5"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Roles Dropdown List */}
+              {showRolesDropdown && (
+                <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto py-1">
+                  {/* Recommended From Resume section */}
+                  {analysisResult && getRecommendedRoles().length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 px-3 py-1.5 bg-slate-50 uppercase tracking-wider">
+                        ✨ Recommended from Resume
+                      </div>
+                      {getRecommendedRoles()
+                        .filter(role => role.toLowerCase().includes(customRole.toLowerCase()))
+                        .map((role) => {
+                          const isSelected = customRole.toLowerCase() === role.toLowerCase();
+                          return (
+                            <button
+                              key={role}
+                              type="button"
+                              onClick={() => {
+                                setCustomRole(role);
+                                setShowRolesDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                                isSelected 
+                                  ? "bg-blue-50 text-blue-700 font-bold" 
+                                  : "text-slate-700 hover:bg-slate-100"
+                              }`}
+                            >
+                              <span className="truncate">{role}</span>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      {getRecommendedRoles().filter(role => role.toLowerCase().includes(customRole.toLowerCase())).length === 0 && (
+                        <div className="text-[11px] text-slate-400 italic px-3 py-2">
+                          No matching roles in resume
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Popular Roles section */}
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 px-3 py-1.5 bg-slate-50 uppercase tracking-wider border-t border-slate-100">
+                      🔥 Popular Tech Roles
+                    </div>
+                    {POPULAR_ROLES
+                      .filter(role => 
+                        role.toLowerCase().includes(customRole.toLowerCase()) &&
+                        !getRecommendedRoles().some(r => r.toLowerCase() === role.toLowerCase())
+                      )
+                      .map((role) => {
+                        const isSelected = customRole.toLowerCase() === role.toLowerCase();
+                        return (
+                          <button
+                            key={role}
+                            type="button"
+                            onClick={() => {
+                              setCustomRole(role);
+                              setShowRolesDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                              isSelected 
+                                ? "bg-blue-50 text-blue-700 font-bold" 
+                                : "text-slate-700 hover:bg-slate-100"
+                            }`}
+                          >
+                            <span className="truncate">{role}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    {POPULAR_ROLES.filter(role => 
+                      role.toLowerCase().includes(customRole.toLowerCase()) &&
+                      !getRecommendedRoles().some(r => r.toLowerCase() === role.toLowerCase())
+                    ).length === 0 && (
+                      <div className="text-[11px] text-slate-400 italic px-3 py-2">
+                        No matching popular roles
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Prompt to use custom typed text if no perfect match */}
+                  {customRole && !POPULAR_ROLES.some(r => r.toLowerCase() === customRole.toLowerCase()) && 
+                   !getRecommendedRoles().some(r => r.toLowerCase() === customRole.toLowerCase()) && (
+                    <div className="p-2 border-t border-slate-100 bg-blue-50/30">
+                      <button
+                        type="button"
+                        onClick={() => setShowRolesDropdown(false)}
+                        className="w-full text-[11px] text-blue-700 font-bold text-left hover:underline cursor-pointer"
+                      >
+                        Keep typed: "{customRole}"
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Custom Target Company */}

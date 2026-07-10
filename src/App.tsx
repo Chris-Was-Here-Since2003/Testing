@@ -10,6 +10,7 @@ import { LoadingState } from "./components/LoadingState";
 import { ErrorState } from "./components/ErrorState";
 import { JobDetailsModal } from "./components/JobDetailsModal";
 import { InterviewChatbot } from "./components/InterviewChatbot";
+import { ResumeGenerator } from "./components/ResumeGenerator";
 import { ResumeAnalysisResult, User, SavedResume, Job } from "./types";
 import { SAMPLE_RESUMES } from "./sampleData";
 
@@ -19,8 +20,8 @@ export default function App() {
   const [analysisResult, setAnalysisResult] = useState<ResumeAnalysisResult | null>(null);
   const [resetKey, setResetKey] = useState(0);
 
-  // Core navigation state: "home" | "analysis" | "interview"
-  const [currentTab, setCurrentTab] = useState<"home" | "analysis" | "interview">("home");
+  // Core navigation state: "home" | "analysis" | "interview" | "resume"
+  const [currentTab, setCurrentTab] = useState<"home" | "analysis" | "interview" | "resume">("home");
 
   // Job Tracker & UI states
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -219,6 +220,8 @@ export default function App() {
                 </div>
                 <InterviewChatbot analysisResult={analysisResult} />
               </div>
+            ) : currentTab === "resume" ? (
+              <ResumeGenerator analysisResult={analysisResult} />
             ) : (
               <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-8">
                 {analysisResult ? (
