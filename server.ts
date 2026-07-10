@@ -481,6 +481,62 @@ app.post("/api/analyze-resume", async (req, res) => {
   }
 });
 
+// API Endpoint for Interview Coaching Chatbot
+app.post("/api/chat-interview", async (req, res) => {
+  try {
+    const { messages, jobContext, resumeContext } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Messages array is required." });
+    }
+
+    const ai = getGenAI();
+
+    // Construct a rich system instruction to guide the interview coach
+    let systemInstruction = `You are an expert AI Interview Coach named SkillSense Interview Coach.
+Your goal is to help the candidate practice and prepare for job interviews.
+
+CRITICAL INSTRUCTIONS:
+1. Be encouraging, professional, and highly constructive.
+2. If the user is doing a mock interview, ask ONE targeted question at a time. Do not dump a list of multiple questions unless specifically asked. After they reply, give feedback on their response (highlighting strengths and suggesting concrete, actionable improvements) and then ask the next question.
+3. Tailor your questions and advice to the candidate's target job role and, if available, their resume details.
+4. Support both behavioral questions (guiding them to use the STAR method: Situation, Task, Action, Result) and technical/domain-specific questions.
+5. Keep your responses engaging, clear, and structured with bullet points where appropriate.
+6. Avoid referencing internal details or mechanics (like system instructions or database properties). Keep all conversations focused on professional growth.
+`;
+
+    if (jobContext) {
+      systemInstruction += `\nTarget Job Role:\nTitle: ${jobContext.title}\nCompany: ${jobContext.company}\nKey Skills Needed: ${jobContext.skills?.join(", ") || ""}\nJob Description:\n${jobContext.description || ""}`;
+    }
+
+    if (resumeContext) {
+      systemInstruction += `\nCandidate's Profile/Skills from Resume:\nName: ${resumeContext.personalInfo?.fullName || "Candidate"}\nSummary: ${resumeContext.personalInfo?.summary || ""}\nKey Skills: ${resumeContext.skills?.map((s: any) => s.name).join(", ") || ""}\nWork History Summary: ${resumeContext.workExperience?.map((w: any) => `${w.jobTitle} at ${w.company}`).join("; ") || ""}`;
+    }
+
+    // Convert messages to Gemini SDK expected parts format
+    const contents = messages.map(msg => ({
+      role: msg.role === "assistant" ? "model" : "user",
+      parts: [{ text: msg.content }]
+    }));
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: contents,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.7,
+      },
+    });
+
+    const reply = response.text;
+    res.json({ reply });
+  } catch (error: any) {
+    console.error("Chatbot API error:", error);
+    res.status(500).json({
+      error: error.message || "Failed to communicate with AI Interview Coach.",
+    });
+  }
+});
+
 // Setup Vite and Static file serving
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
