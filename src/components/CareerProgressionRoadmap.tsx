@@ -66,7 +66,7 @@ export default function CareerProgressionRoadmap({ careerProgression }: CareerPr
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
             Choose Pathway Option:
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {pathways.map((path: any, idx: number) => (
               <button
                 key={idx}

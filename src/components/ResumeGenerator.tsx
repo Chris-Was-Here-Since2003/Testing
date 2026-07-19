@@ -92,6 +92,7 @@ export const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({ analysisResult
   const [resumeData, setResumeData] = useState<GeneratedResumeData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateStyle>("modern");
   const [accentColor, setAccentColor] = useState("#3B82F6"); // Default blue
+  const [density, setDensity] = useState<"compact" | "standard" | "spacious">("standard");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -304,35 +305,189 @@ export const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({ analysisResult
     window.print();
   };
 
+  // Spacing density options that affect page-budget allocation
+  const getDensityStyles = () => {
+    switch (density) {
+      case "compact":
+        return {
+          padding: "p-6 md:p-8",
+          sectionMargin: "mb-3",
+          itemSpacing: "space-y-1.5",
+          listSpacing: "space-y-0.5",
+          fontSizeModifier: "text-[11px] leading-normal",
+          sectionTitleMargin: "mt-4 mb-2",
+          headerPadding: "pb-4 mb-4",
+          maxCapacity: 135, // Packs more content on a single page
+        };
+      case "spacious":
+        return {
+          padding: "p-10 md:p-14",
+          sectionMargin: "mb-6",
+          itemSpacing: "space-y-4",
+          listSpacing: "space-y-1.5",
+          fontSizeModifier: "text-xs md:text-sm leading-relaxed",
+          sectionTitleMargin: "mt-8 mb-4",
+          headerPadding: "pb-8 mb-8",
+          maxCapacity: 85, // Spans pages more eagerly
+        };
+      case "standard":
+      default:
+        return {
+          padding: "p-8 md:p-12",
+          sectionMargin: "mb-4",
+          itemSpacing: "space-y-3",
+          listSpacing: "space-y-1",
+          fontSizeModifier: "text-xs leading-relaxed",
+          sectionTitleMargin: "mt-6 mb-3",
+          headerPadding: "pb-6 mb-6",
+          maxCapacity: 110, // Default balanced capacity
+        };
+    }
+  };
+
+  interface PaginatedPageContent {
+    pageIndex: number;
+    showHeader: boolean;
+    showSummary: boolean;
+    workExperience: GeneratedResumeData["workExperience"];
+    skills: GeneratedResumeData["skills"];
+    projects: NonNullable<GeneratedResumeData["projects"]>;
+    education: GeneratedResumeData["education"];
+    certifications: NonNullable<GeneratedResumeData["certifications"]>;
+  }
+
+  // Smart packing algorithm that splits sections and elements across multiple pages
+  const getPaginatedPages = (data: GeneratedResumeData): PaginatedPageContent[] => {
+    const pages: PaginatedPageContent[] = [];
+    const d = getDensityStyles();
+    const maxCap = d.maxCapacity;
+
+    const createEmptyPage = (index: number): PaginatedPageContent => ({
+      pageIndex: index,
+      showHeader: index === 0,
+      showSummary: false,
+      workExperience: [],
+      skills: [],
+      projects: [],
+      education: [],
+      certifications: []
+    });
+
+    let currentPage = createEmptyPage(0);
+    let currentCapacityUsed = 0;
+
+    // 1. Header (always on page 1, takes some structural room)
+    if (currentPage.showHeader) {
+      currentCapacityUsed += 15;
+    }
+
+    // Helper to start a new page if the next section exceeds page-height limit
+    const allocateOrBreak = (weight: number) => {
+      if (currentCapacityUsed + weight > maxCap) {
+        pages.push(currentPage);
+        currentPage = createEmptyPage(pages.length);
+        currentCapacityUsed = 0;
+        return true;
+      }
+      return false;
+    };
+
+    // 2. Summary profile
+    if (data.personalInfo.summary) {
+      const summaryText = data.personalInfo.summary;
+      const summaryWeight = 10 + Math.ceil(summaryText.length / 100) * 3;
+      
+      allocateOrBreak(summaryWeight);
+      currentPage.showSummary = true;
+      currentCapacityUsed += summaryWeight;
+    }
+
+    // 3. Work Experience items (can break item-by-item)
+    if (data.workExperience && data.workExperience.length > 0) {
+      data.workExperience.forEach((exp) => {
+        const bulletsWeight = exp.description.reduce((acc, bullet) => acc + 2 + Math.ceil(bullet.length / 80) * 1.5, 0);
+        const expWeight = 10 + bulletsWeight;
+
+        allocateOrBreak(expWeight);
+        currentPage.workExperience.push(exp);
+        currentCapacityUsed += expWeight;
+      });
+    }
+
+    // 4. Skills
+    if (data.skills && data.skills.length > 0) {
+      const skillsWeight = 8 + Math.ceil(data.skills.length / 6) * 3;
+      allocateOrBreak(skillsWeight);
+      currentPage.skills = data.skills;
+      currentCapacityUsed += skillsWeight;
+    }
+
+    // 5. Projects
+    if (data.projects && data.projects.length > 0) {
+      data.projects.forEach((proj) => {
+        const projWeight = 10 + Math.ceil(proj.description.length / 120) * 3;
+        allocateOrBreak(projWeight);
+        currentPage.projects.push(proj);
+        currentCapacityUsed += projWeight;
+      });
+    }
+
+    // 6. Education items
+    if (data.education && data.education.length > 0) {
+      data.education.forEach((edu) => {
+        const eduWeight = 8;
+        allocateOrBreak(eduWeight);
+        currentPage.education.push(edu);
+        currentCapacityUsed += eduWeight;
+      });
+    }
+
+    // 7. Certifications
+    if (data.certifications && data.certifications.length > 0) {
+      data.certifications.forEach((cert) => {
+        const certWeight = 5;
+        allocateOrBreak(certWeight);
+        currentPage.certifications.push(cert);
+        currentCapacityUsed += certWeight;
+      });
+    }
+
+    // Push final page
+    pages.push(currentPage);
+    return pages;
+  };
+
   // Inline styling options for the selected template
   const getTemplateStyles = () => {
+    const d = getDensityStyles();
     switch (selectedTemplate) {
       case "executive":
         return {
           fontFamily: "'Playfair Display', Georgia, serif",
-          containerClass: "bg-white p-12 text-slate-900 border border-slate-100 max-w-4xl mx-auto shadow-sm printable-area text-sm leading-relaxed",
-          headerClass: "text-center border-b border-slate-200 pb-6 mb-6",
-          sectionTitleClass: "text-xs uppercase tracking-widest font-bold text-slate-800 border-b border-slate-200 pb-1.5 mb-3 mt-6 flex items-center gap-2",
+          containerClass: `bg-white ${d.padding} text-slate-900 border border-slate-100 max-w-4xl mx-auto shadow-sm text-sm leading-relaxed`,
+          headerClass: `text-center border-b border-slate-200 ${d.headerPadding}`,
+          sectionTitleClass: `text-xs uppercase tracking-widest font-bold text-slate-800 border-b border-slate-200 pb-1.5 ${d.sectionTitleMargin} flex items-center gap-2`,
         };
       case "tech":
         return {
           fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-          containerClass: "bg-white p-10 text-slate-900 border border-slate-200 max-w-4xl mx-auto shadow-sm printable-area text-xs leading-normal",
-          headerClass: "border-b-2 border-dashed border-slate-200 pb-5 mb-5",
-          sectionTitleClass: "text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 px-2 py-1 mb-3 mt-5 flex items-center gap-1.5",
+          containerClass: `bg-white ${d.padding} text-slate-900 border border-slate-200 max-w-4xl mx-auto shadow-sm text-xs leading-normal`,
+          headerClass: `border-b-2 border-dashed border-slate-200 ${d.headerPadding}`,
+          sectionTitleClass: `text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 px-2 py-1 ${d.sectionTitleMargin} flex items-center gap-1.5`,
         };
       case "modern":
       default:
         return {
           fontFamily: "'Inter', sans-serif",
-          containerClass: "bg-white p-12 text-slate-800 border border-slate-100 max-w-4xl mx-auto shadow-sm printable-area text-xs leading-relaxed",
-          headerClass: "pb-6 mb-6 border-b-2",
-          sectionTitleClass: "text-sm font-bold border-b pb-1 mb-3 mt-6 flex items-center gap-2",
+          containerClass: `bg-white ${d.padding} text-slate-800 border border-slate-100 max-w-4xl mx-auto shadow-sm text-xs leading-relaxed`,
+          headerClass: `border-b-2 ${d.headerPadding}`,
+          sectionTitleClass: `text-sm font-bold border-b pb-1 ${d.sectionTitleMargin} flex items-center gap-2`,
         };
     }
   };
 
   const style = getTemplateStyles();
+  const densityStyle = getDensityStyles();
 
   return (
     <div className="min-h-screen bg-slate-50/50 py-8 px-4 sm:px-6 lg:px-8">
@@ -354,6 +509,18 @@ export const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({ analysisResult
             box-shadow: none !important;
             padding: 0 !important;
             margin: 0 !important;
+          }
+          .resume-page-break {
+            page-break-after: always;
+            break-after: page;
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .resume-page-break:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
           }
         }
       `}</style>
@@ -640,8 +807,8 @@ export const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({ analysisResult
             
             {/* Quick Design controls */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-6">
                   <div>
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                       <Palette className="w-3.5 h-3.5" />
@@ -676,6 +843,42 @@ export const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({ analysisResult
                   </div>
 
                   <div>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Grid className="w-3.5 h-3.5" />
+                      Page Budget / Density
+                    </span>
+                    <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+                      <button
+                        onClick={() => setDensity("compact")}
+                        className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                          density === "compact" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                        }`}
+                        title="Packs more details onto each page using tight margins"
+                      >
+                        Compact
+                      </button>
+                      <button
+                        onClick={() => setDensity("standard")}
+                        className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                          density === "standard" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                        }`}
+                        title="Standard balanced spacing"
+                      >
+                        Standard
+                      </button>
+                      <button
+                        onClick={() => setDensity("spacious")}
+                        className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                          density === "spacious" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                        }`}
+                        title="Spans pages more eagerly with larger, highly readable layouts"
+                      >
+                        Spacious
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                       <Palette className="w-3.5 h-3.5" />
                       Accent Color
@@ -683,18 +886,18 @@ export const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({ analysisResult
                     <div className="flex items-center gap-1.5">
                       {ACCENT_COLORS.map((c) => (
                         <button
-                          key={c.value}
-                          onClick={() => setAccentColor(c.value)}
-                          className="w-5.5 h-5.5 rounded-full border-2 transition-all cursor-pointer relative flex items-center justify-center shrink-0"
-                          style={{ 
-                            backgroundColor: c.value,
-                            borderColor: accentColor === c.value ? "#000000" : "transparent"
-                          }}
-                          title={c.name}
+                           key={c.value}
+                           onClick={() => setAccentColor(c.value)}
+                           className="w-5.5 h-5.5 rounded-full border-2 transition-all cursor-pointer relative flex items-center justify-center shrink-0"
+                           style={{ 
+                             backgroundColor: c.value,
+                             borderColor: accentColor === c.value ? "#000000" : "transparent"
+                           }}
+                           title={c.name}
                         >
-                          {accentColor === c.value && (
-                            <Check className="w-3 h-3 text-white font-black" />
-                          )}
+                           {accentColor === c.value && (
+                             <Check className="w-3 h-3 text-white font-black" />
+                           )}
                         </button>
                       ))}
                     </div>
@@ -729,228 +932,241 @@ export const ResumeGenerator: React.FC<ResumeGeneratorProps> = ({ analysisResult
               
               <AnimatePresence mode="wait">
                 {resumeData ? (
-                  <motion.div
-                    key={`${selectedTemplate}-${accentColor}`}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.25 }}
-                    className={style.containerClass}
-                    style={{ fontFamily: style.fontFamily }}
-                    id="resume-document"
-                  >
-                    
-                    {/* Header */}
-                    <div className={style.headerClass} style={{ borderColor: selectedTemplate === "modern" ? accentColor : undefined }}>
-                      {selectedTemplate === "modern" ? (
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
-                          <div>
-                            <h2 className="text-2xl font-black tracking-tight" style={{ color: accentColor }}>
-                              {resumeData.personalInfo.fullName}
-                            </h2>
-                            <p className="text-slate-500 text-xs font-semibold mt-1">
-                              {resumeData.personalInfo.email} &bull; {resumeData.personalInfo.phone} &bull; {resumeData.personalInfo.location}
-                            </p>
-                          </div>
-                          {resumeData.personalInfo.links && resumeData.personalInfo.links.length > 0 && (
-                            <div className="text-[10px] text-slate-400 font-medium flex flex-wrap gap-x-2 md:text-right">
-                              {resumeData.personalInfo.links.map((link, idx) => (
-                                <span key={idx} className="hover:underline">
-                                  {link}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ) : selectedTemplate === "tech" ? (
-                        <div>
-                          <div className="flex justify-between items-start">
-                            <h2 className="text-xl font-bold uppercase tracking-tight text-slate-900">
-                              // {resumeData.personalInfo.fullName}
-                            </h2>
-                            <span className="text-[10px] text-emerald-600 font-mono">STATUS: COMPILED</span>
-                          </div>
-                          <div className="text-slate-500 font-mono text-[10px] mt-2 space-y-0.5">
-                            <div><span className="text-slate-400">CONTACT_EMAIL :</span> {resumeData.personalInfo.email}</div>
-                            <div><span className="text-slate-400">CONTACT_PHONE :</span> {resumeData.personalInfo.phone}</div>
-                            <div><span className="text-slate-400">LOCATION      :</span> {resumeData.personalInfo.location}</div>
-                            {resumeData.personalInfo.links && resumeData.personalInfo.links.length > 0 && (
-                              <div><span className="text-slate-400">PORTFOLIOS    :</span> {resumeData.personalInfo.links.join(", ")}</div>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        // Executive
-                        <div>
-                          <h2 className="text-2xl font-normal text-slate-900 tracking-wide font-serif">
-                            {resumeData.personalInfo.fullName}
-                          </h2>
-                          <p className="text-slate-500 text-xs font-serif italic mt-1.5">
-                            {resumeData.personalInfo.location} &bull; {resumeData.personalInfo.email} &bull; {resumeData.personalInfo.phone}
-                          </p>
-                          {resumeData.personalInfo.links && resumeData.personalInfo.links.length > 0 && (
-                            <div className="text-[10px] text-slate-500 tracking-wide mt-2 space-x-3">
-                              {resumeData.personalInfo.links.map((link, idx) => (
-                                <span key={idx} className="hover:underline">
-                                  {link}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Executive Summary */}
-                    {resumeData.personalInfo.summary && (
-                      <div className="mb-4">
-                        <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
-                          {selectedTemplate === "modern" && <FileText className="w-3.5 h-3.5 shrink-0" />}
-                          {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
-                          Professional Profile
-                        </div>
-                        <p className="text-slate-600 leading-relaxed font-medium">
-                          {resumeData.personalInfo.summary}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Work Experience */}
-                    {resumeData.workExperience && resumeData.workExperience.length > 0 && (
-                      <div className="mb-4">
-                        <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
-                          {selectedTemplate === "modern" && <Briefcase className="w-3.5 h-3.5 shrink-0" />}
-                          {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
-                          Work Experience
-                        </div>
-                        <div className="space-y-4">
-                          {resumeData.workExperience.map((exp, idx) => (
-                            <div key={idx} className="group">
-                              <div className="flex justify-between items-start font-bold text-slate-800">
+                  <div className="printable-area flex flex-col gap-6 w-full" id="resume-document">
+                    {getPaginatedPages(resumeData).map((page, pageIdx, allPages) => (
+                      <motion.div
+                        key={`${selectedTemplate}-${accentColor}-${pageIdx}`}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.25 }}
+                        className={`${style.containerClass} resume-page-break relative min-h-[650px] pb-16`}
+                        style={{ fontFamily: style.fontFamily }}
+                      >
+                        
+                        {/* Header */}
+                        {page.showHeader && (
+                          <div className={style.headerClass} style={{ borderColor: selectedTemplate === "modern" ? accentColor : undefined }}>
+                            {selectedTemplate === "modern" ? (
+                              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
                                 <div>
-                                  <span className="text-slate-950 font-bold">{exp.jobTitle}</span>
-                                  <span className="text-slate-400 font-normal"> at </span>
-                                  <span style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>{exp.company}</span>
+                                  <h2 className="text-2xl font-black tracking-tight" style={{ color: accentColor }}>
+                                    {resumeData.personalInfo.fullName}
+                                  </h2>
+                                  <p className="text-slate-500 text-xs font-semibold mt-1">
+                                    {resumeData.personalInfo.email} &bull; {resumeData.personalInfo.phone} &bull; {resumeData.personalInfo.location}
+                                  </p>
                                 </div>
-                                <span className="text-[10px] text-slate-500 font-semibold shrink-0">{exp.duration}</span>
-                              </div>
-                              {exp.location && (
-                                <span className="block text-[10px] text-slate-400 font-medium italic mt-0.5">{exp.location}</span>
-                              )}
-                              <ul className="list-disc list-outside pl-4 mt-2 space-y-1 text-slate-600 font-medium">
-                                {exp.description.map((bullet, bulletIdx) => (
-                                  <li key={bulletIdx}>{bullet}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Key Skills */}
-                    {resumeData.skills && resumeData.skills.length > 0 && (
-                      <div className="mb-4">
-                        <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
-                          {selectedTemplate === "modern" && <Code className="w-3.5 h-3.5 shrink-0" />}
-                          {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
-                          Skills & Competencies
-                        </div>
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {resumeData.skills.map((skill, idx) => (
-                            <span 
-                              key={idx} 
-                              className={`text-[10px] font-semibold px-2.5 py-1 rounded-md border ${
-                                selectedTemplate === "tech" 
-                                  ? "bg-slate-50 border-slate-200 text-slate-800 font-mono" 
-                                  : "bg-slate-50/50 border-slate-100 text-slate-700"
-                              }`}
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Projects */}
-                    {resumeData.projects && resumeData.projects.length > 0 && (
-                      <div className="mb-4">
-                        <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
-                          {selectedTemplate === "modern" && <FolderGit2 className="w-3.5 h-3.5 shrink-0" />}
-                          {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
-                          Key Projects
-                        </div>
-                        <div className="space-y-3">
-                          {resumeData.projects.map((proj, idx) => (
-                            <div key={idx}>
-                              <div className="flex justify-between items-start">
-                                <h4 className="text-slate-900 font-bold">{proj.title}</h4>
-                                {proj.technologiesUsed && proj.technologiesUsed.length > 0 && (
-                                  <div className="flex gap-1">
-                                    {proj.technologiesUsed.map((tech, tIdx) => (
-                                      <span key={tIdx} className="text-[9px] text-slate-400 font-mono border border-slate-100 px-1 rounded">
-                                        {tech}
+                                {resumeData.personalInfo.links && resumeData.personalInfo.links.length > 0 && (
+                                  <div className="text-[10px] text-slate-400 font-medium flex flex-wrap gap-x-2 md:text-right">
+                                    {resumeData.personalInfo.links.map((link, idx) => (
+                                      <span key={idx} className="hover:underline">
+                                        {link}
                                       </span>
                                     ))}
                                   </div>
                                 )}
                               </div>
-                              <p className="text-slate-600 font-medium mt-1 leading-normal">{proj.description}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Education */}
-                    {resumeData.education && resumeData.education.length > 0 && (
-                      <div className="mb-4">
-                        <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
-                          {selectedTemplate === "modern" && <GraduationCap className="w-3.5 h-3.5 shrink-0" />}
-                          {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
-                          Education History
-                        </div>
-                        <div className="space-y-3">
-                          {resumeData.education.map((edu, idx) => (
-                            <div key={idx} className="flex justify-between items-start">
+                            ) : selectedTemplate === "tech" ? (
                               <div>
-                                <span className="text-slate-900 font-bold">{edu.degree}</span>
-                                {edu.fieldOfStudy && (
-                                  <span className="text-slate-600 font-medium"> in {edu.fieldOfStudy}</span>
-                                )}
-                                <div className="text-[10px] text-slate-400 font-semibold mt-0.5">{edu.institution}</div>
+                                <div className="flex justify-between items-start">
+                                  <h2 className="text-xl font-bold uppercase tracking-tight text-slate-900">
+                                    // {resumeData.personalInfo.fullName}
+                                  </h2>
+                                  <span className="text-[10px] text-emerald-600 font-mono">STATUS: COMPILED</span>
+                                </div>
+                                <div className="text-slate-500 font-mono text-[10px] mt-2 space-y-0.5">
+                                  <div><span className="text-slate-400">CONTACT_EMAIL :</span> {resumeData.personalInfo.email}</div>
+                                  <div><span className="text-slate-400">CONTACT_PHONE :</span> {resumeData.personalInfo.phone}</div>
+                                  <div><span className="text-slate-400">LOCATION      :</span> {resumeData.personalInfo.location}</div>
+                                  {resumeData.personalInfo.links && resumeData.personalInfo.links.length > 0 && (
+                                    <div><span className="text-slate-400">PORTFOLIOS    :</span> {resumeData.personalInfo.links.join(", ")}</div>
+                                  )}
+                                </div>
                               </div>
-                              <span className="text-[10px] text-slate-500 font-semibold shrink-0">{edu.duration}</span>
+                            ) : (
+                              // Executive
+                              <div>
+                                <h2 className="text-2xl font-normal text-slate-900 tracking-wide font-serif">
+                                  {resumeData.personalInfo.fullName}
+                                </h2>
+                                <p className="text-slate-500 text-xs font-serif italic mt-1.5">
+                                  {resumeData.personalInfo.location} &bull; {resumeData.personalInfo.email} &bull; {resumeData.personalInfo.phone}
+                                </p>
+                                {resumeData.personalInfo.links && resumeData.personalInfo.links.length > 0 && (
+                                  <div className="text-[10px] text-slate-500 tracking-wide mt-2 space-x-3">
+                                    {resumeData.personalInfo.links.map((link, idx) => (
+                                      <span key={idx} className="hover:underline">
+                                        {link}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Executive Summary */}
+                        {page.showSummary && resumeData.personalInfo.summary && (
+                          <div className={densityStyle.sectionMargin}>
+                            <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
+                              {selectedTemplate === "modern" && <FileText className="w-3.5 h-3.5 shrink-0" />}
+                              {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
+                              Professional Profile
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                            <p className="text-slate-600 leading-relaxed font-medium">
+                              {resumeData.personalInfo.summary}
+                            </p>
+                          </div>
+                        )}
 
-                    {/* Certifications */}
-                    {resumeData.certifications && resumeData.certifications.length > 0 && (
-                      <div className="mb-4">
-                        <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
-                          {selectedTemplate === "modern" && <Award className="w-3.5 h-3.5 shrink-0" />}
-                          {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
-                          Certifications
-                        </div>
-                        <ul className="list-disc list-outside pl-4 space-y-1 text-slate-600 font-medium">
-                          {resumeData.certifications.map((cert, idx) => (
-                            <li key={idx}>
-                              <span className="font-bold text-slate-800">{cert.name}</span>
-                              {cert.issuingOrganization && (
-                                <span className="text-slate-500"> &bull; {cert.issuingOrganization}</span>
-                              )}
-                              {cert.issueDate && <span className="text-slate-400 font-normal"> ({cert.issueDate})</span>}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                        {/* Work Experience */}
+                        {page.workExperience && page.workExperience.length > 0 && (
+                          <div className={densityStyle.sectionMargin}>
+                            <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
+                              {selectedTemplate === "modern" && <Briefcase className="w-3.5 h-3.5 shrink-0" />}
+                              {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
+                              Work Experience {pageIdx > 0 && <span className="text-[10px] font-normal text-slate-400 lowercase italic">(continued)</span>}
+                            </div>
+                            <div className={densityStyle.itemSpacing}>
+                              {page.workExperience.map((exp, idx) => (
+                                <div key={idx} className="group">
+                                  <div className="flex justify-between items-start font-bold text-slate-800">
+                                    <div>
+                                      <span className="text-slate-950 font-bold">{exp.jobTitle}</span>
+                                      <span className="text-slate-400 font-normal"> at </span>
+                                      <span style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>{exp.company}</span>
+                                    </div>
+                                    <span className="text-[10px] text-slate-500 font-semibold shrink-0">{exp.duration}</span>
+                                  </div>
+                                  {exp.location && (
+                                    <span className="block text-[10px] text-slate-400 font-medium italic mt-0.5">{exp.location}</span>
+                                  )}
+                                  <ul className={`list-disc list-outside pl-4 mt-2 ${densityStyle.listSpacing} text-slate-600 font-medium`}>
+                                    {exp.description.map((bullet, bulletIdx) => (
+                                      <li key={bulletIdx}>{bullet}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
-                  </motion.div>
+                        {/* Key Skills */}
+                        {page.skills && page.skills.length > 0 && (
+                          <div className={densityStyle.sectionMargin}>
+                            <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
+                              {selectedTemplate === "modern" && <Code className="w-3.5 h-3.5 shrink-0" />}
+                              {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
+                              Skills & Competencies
+                            </div>
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {page.skills.map((skill, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className={`text-[10px] font-semibold px-2.5 py-1 rounded-md border ${
+                                    selectedTemplate === "tech" 
+                                      ? "bg-slate-50 border-slate-200 text-slate-800 font-mono" 
+                                      : "bg-slate-50/50 border-slate-100 text-slate-700"
+                                  }`}
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Projects */}
+                        {page.projects && page.projects.length > 0 && (
+                          <div className={densityStyle.sectionMargin}>
+                            <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
+                              {selectedTemplate === "modern" && <FolderGit2 className="w-3.5 h-3.5 shrink-0" />}
+                              {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
+                              Key Projects {pageIdx > 0 && page.workExperience.length === 0 && <span className="text-[10px] font-normal text-slate-400 lowercase italic">(continued)</span>}
+                            </div>
+                            <div className={densityStyle.itemSpacing}>
+                              {page.projects.map((proj, idx) => (
+                                <div key={idx}>
+                                  <div className="flex justify-between items-start">
+                                    <h4 className="text-slate-900 font-bold">{proj.title}</h4>
+                                    {proj.technologiesUsed && proj.technologiesUsed.length > 0 && (
+                                      <div className="flex gap-1">
+                                        {proj.technologiesUsed.map((tech, tIdx) => (
+                                          <span key={tIdx} className="text-[9px] text-slate-400 font-mono border border-slate-100 px-1 rounded">
+                                            {tech}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <p className="text-slate-600 font-medium mt-1 leading-normal">{proj.description}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Education */}
+                        {page.education && page.education.length > 0 && (
+                          <div className={densityStyle.sectionMargin}>
+                            <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
+                              {selectedTemplate === "modern" && <GraduationCap className="w-3.5 h-3.5 shrink-0" />}
+                              {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
+                              Education History
+                            </div>
+                            <div className={densityStyle.itemSpacing}>
+                              {page.education.map((edu, idx) => (
+                                <div key={idx} className="flex justify-between items-start">
+                                  <div>
+                                    <span className="text-slate-900 font-bold">{edu.degree}</span>
+                                    {edu.fieldOfStudy && (
+                                      <span className="text-slate-600 font-medium"> in {edu.fieldOfStudy}</span>
+                                    )}
+                                    <div className="text-[10px] text-slate-400 font-semibold mt-0.5">{edu.institution}</div>
+                                  </div>
+                                  <span className="text-[10px] text-slate-500 font-semibold shrink-0">{edu.duration}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Certifications */}
+                        {page.certifications && page.certifications.length > 0 && (
+                          <div className={densityStyle.sectionMargin}>
+                            <div className={style.sectionTitleClass} style={{ color: selectedTemplate === "modern" ? accentColor : undefined }}>
+                              {selectedTemplate === "modern" && <Award className="w-3.5 h-3.5 shrink-0" />}
+                              {selectedTemplate === "tech" && <span className="text-[9px] text-slate-400">&gt;</span>}
+                              Certifications
+                            </div>
+                            <ul className={`list-disc list-outside pl-4 ${densityStyle.listSpacing} text-slate-600 font-medium`}>
+                              {page.certifications.map((cert, idx) => (
+                                <li key={idx}>
+                                  <span className="font-bold text-slate-800">{cert.name}</span>
+                                  {cert.issuingOrganization && (
+                                    <span className="text-slate-500"> &bull; {cert.issuingOrganization}</span>
+                                  )}
+                                  {cert.issueDate && <span className="text-slate-400 font-normal"> ({cert.issueDate})</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Footer page number indicator */}
+                        {allPages.length > 1 && (
+                          <div className="absolute bottom-4 left-0 right-0 px-8 md:px-12 flex justify-between items-center text-[10px] text-slate-400 font-medium font-sans border-t border-slate-100 pt-3 mt-6 print:absolute print:bottom-4">
+                            <span>{resumeData.personalInfo.fullName} &bull; Resume</span>
+                            <span>Page {pageIdx + 1} of {allPages.length}</span>
+                          </div>
+                        )}
+
+                      </motion.div>
+                    ))}
+                  </div>
                 ) : (
                   // Empty State
                   <motion.div

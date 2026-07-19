@@ -134,6 +134,36 @@ export const SAMPLE_RESUMES: Record<string, { label: string; description: string
                 description: "Manage the entire platform division, driving SLA compliance, cloud vendor negotiations, and technical roadmaps for dev-experience and reliability."
               }
             ]
+          },
+          {
+            pathwayName: "Technical Product Leadership Route",
+            description: "Pivot into leading high-impact product engineering squads, managing technical product specifications, and aligning engineering execution with business strategy.",
+            predictedRoles: [
+              {
+                roleTitle: "Technical Product Manager (Platform)",
+                timeframe: "1-2 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Product Backlog Management", "User Research Methods", "Agile Product Metrics"],
+                description: "Leverage strong full-stack skills to oversee technical products. Align developer needs with platform design, formulate roadmaps, and write detailed functional specs."
+              },
+              {
+                roleTitle: "Senior Product Manager (Core Infrastructure)",
+                timeframe: "3-4 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Go-to-Market Strategy", "Financial Modeling", "Strategic Roadmapping"],
+                description: "Own large-scale developer-facing products or platform ecosystems. Lead product initiatives, coordinate cross-functional rollouts, and drive high-retention APIs."
+              },
+              {
+                roleTitle: "Director of Technical Product",
+                timeframe: "5+ years",
+                transitionDifficulty: "High",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Executive Leadership", "Portfolio Strategy", "Strategic Partnerships"],
+                description: "Lead the technical product division. Direct the roadmap for all engineering-focused and developer-focused products, managing PM teams and defining multi-year product visions."
+              }
+            ]
           }
         ]
       },
@@ -308,6 +338,36 @@ export const SAMPLE_RESUMES: Record<string, { label: string; description: string
                 marketDemand: "High",
                 requiredSkillsToAcquire: ["Corporate Finance", "Portfolio Management", "Strategic Vision & Public Speaking"],
                 description: "Own the entire corporate product portfolio. Define the 5-year product strategy, build high-performing PM teams, and report on business value directly to the C-suite."
+              }
+            ]
+          },
+          {
+            pathwayName: "Corporate Strategy & Executive Route",
+            description: "Leverage marketing expertise, quantitative analyst skills, and business acumen to drive large-scale corporate development, mergers, and strategic expansion plans.",
+            predictedRoles: [
+              {
+                roleTitle: "Strategic Operations Lead",
+                timeframe: "1-2 years",
+                transitionDifficulty: "Medium",
+                marketDemand: "Moderate",
+                requiredSkillsToAcquire: ["Financial Analysis", "Business Operations", "Strategic Planning Frameworks"],
+                description: "Work directly under corporate COOs or strategy leaders to translate data insights into operational efficiency and new market feasibility."
+              },
+              {
+                roleTitle: "Director of Strategic Growth",
+                timeframe: "3-4 years",
+                transitionDifficulty: "High",
+                marketDemand: "High",
+                requiredSkillsToAcquire: ["Mergers & Acquisitions Basics", "Venture Economics", "Advanced Financial Modeling"],
+                description: "Lead corporate initiatives for business development, geographic expansion, strategic ecosystem partnerships, and quantitative revenue forecasting."
+              },
+              {
+                roleTitle: "Chief Strategy Officer (CSO)",
+                timeframe: "5+ years",
+                transitionDifficulty: "High",
+                marketDemand: "Moderate",
+                requiredSkillsToAcquire: ["Executive Communications", "Macro-economics", "Global Enterprise Strategy"],
+                description: "Serve as the principal architect of the firm's long-term competitive positioning. Manage corporate portfolios, lead board-level development, and formulate risk strategies."
               }
             ]
           }
